@@ -1,0 +1,34 @@
+{
+  "name": "bimo",
+  "version": "1.1.0",
+  "description": "Binding and Model - Non-intrusive binding between model and HTML controls and non-opinionated observable model with multiple watch strategies.",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "lint": "node_modules/.bin/gulp lint",
+    "bundle": "node_modules/.bin/gulp bundle",
+    "test": "node_modules/.bin/gulp test"
+  },
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "chai": "^3.4.1",
+    "gulp": "^3.9.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-copy": "0.0.2",
+    "gulp-exit": "0.0.2",
+    "gulp-expect-file": "0.0.7",
+    "gulp-gzip": "^1.2.0",
+    "gulp-jshint": "^2.0.0",
+    "gulp-load-plugins": "^1.1.0",
+    "gulp-markdown": "^1.2.0",
+    "gulp-mocha": "^2.2.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.5.1",
+    "gulp-util": "^3.0.7",
+    "gulp-yuidoc": "^0.1.2",
+    "jshint": "^2.8.0",
+    "jshint-stylish": "^2.1.0",
+    "mocha": "^2.3.4"
+  }
+}
