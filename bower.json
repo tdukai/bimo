@@ -4,17 +4,18 @@
   "description": "Binding and Model - Non-intrusive binding between model and HTML controls and non-opinionated observable model with multiple watch strategies.",
   "main": "dist/bimo.min.js",
   "authors": [
-    "Tamara Dukai"
+    "Tamara Dukai <tamara@dukai.net> (https://ca.linkedin.com/in/tamaradukai)"
   ],
   "license": "MIT",
   "keywords": [
-    "Binding",
-    "Model",
-    "Micro"
+    "binding",
+    "model"
   ],
-  "moduleType": [],
-  "homepage": "",
-  "private": true,
+  "moduleType": [
+    "globals",
+    "node"
+  ],
+  "homepage": "https://github.com/tdukai/bimo",
   "ignore": [
     "**/.*",
     "node_modules",

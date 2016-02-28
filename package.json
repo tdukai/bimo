@@ -2,15 +2,23 @@
   "name": "bimo",
   "version": "1.1.0",
   "description": "Binding and Model - Non-intrusive binding between model and HTML controls and non-opinionated observable model with multiple watch strategies.",
-  "private": true,
   "main": "index.js",
+  "author": "Tamara Dukai <tamara@dukai.net> (https://ca.linkedin.com/in/tamaradukai)",
   "scripts": {
     "lint": "node_modules/.bin/gulp lint",
     "bundle": "node_modules/.bin/gulp bundle",
     "test": "node_modules/.bin/gulp test"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tdukai/bimo"
+  },
+  "bugs": {
+    "url": "https://github.com/tdukai/bimo/issues"
+  },
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+  },
   "devDependencies": {
     "chai": "^3.4.1",
     "gulp": "^3.9.0",

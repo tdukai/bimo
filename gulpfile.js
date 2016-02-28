@@ -1,7 +1,6 @@
 'use strict';
 
 var gulp = require('gulp');
-var pkg = require('./package.json');
 var plugins = require('gulp-load-plugins')({"camelize": true});
 var jsLint = ['*.js', '*.json', '.jshintrc', 'src/*.js', 'test/*.js'];
 var jsTest = ['test/*.js'];
@@ -27,16 +26,13 @@ gulp.task('test', ['lint'], function () {
 
 // Bundling
 gulp.task('bundle', function() {
-    var packageName = 'bimo-' + pkg.version;
     // Copy License to dist folder
     gulp.src('LICENSE')
         .pipe(gulp.dest('dist'));
-
     // Create combined (non compressed) package
     gulp.src(bundle)
-        .pipe(plugins.concat(packageName + '.js'))
+        .pipe(plugins.concat('bimo.js'))
         .pipe(gulp.dest('dist'));
-    
     // Create individual files compressed 
     gulp.src(bundle)
         .pipe(plugins.uglify())
@@ -46,29 +42,22 @@ gulp.task('bundle', function() {
     gulp.src(bundle)
         .pipe(plugins.uglify())
         .pipe(plugins.gzip({
-            append: false,
+            append: true,
             gzipOptions: {
                 level: 9
             }
         }))
-        .pipe(plugins.rename({ extname: '.min.js.gz' }))
         .pipe(gulp.dest('dist'));
-    // Create the compressed version for the whole package
-    gulp.src(bundle)
-        .pipe(plugins.concat(packageName + '.min.js'))
-        .pipe(plugins.uglify())
-        .pipe(gulp.dest('dist'));
-    // Create gzip compressed version for the whole package
     return gulp.src(bundle)
-        .pipe(plugins.concat(packageName + '.js'))
+        .pipe(plugins.concat('bimo.min.js'))
         .pipe(plugins.uglify())
+        .pipe(gulp.dest('dist'))
         .pipe(plugins.gzip({
-            append: false,
+            append: true,
             gzipOptions: {
                 level: 9
             }
         }))
-        .pipe(plugins.rename({ extname: '.min.js.gz' }))
         .pipe(gulp.dest('dist'));
 });
 
