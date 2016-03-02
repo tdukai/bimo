@@ -295,10 +295,11 @@ Quick Reference:
 
 |Function|Description|
 |---|---|
+|new Binder(options)|Constructor. Options object: "container": DOM Selector, "model": Observable Model, "config": Binding Configuration, "defaults": Default Values. Initial default values: "twoWay" true, "event": 'change', "property": 'value'
 |bind(callback)|Execute bind() methods on each member of the binds hash table of Bind objects. If callback is specified it will be called after binding process is completed|
 |unbind(callback)|Execute unbind() methods on each member of the binds hash table of Bind objects. If callback is specified it will be called after binding process is completed|
 |run('methodName')|Expose method to specify any method as string to executed on all bind objects, example bind() is syntax sugar on run('bind') or unbind() on run('unbind')|
-|init(container, model, config)|Method to add ability to initalize a binder object outside of the constructor.|
+|init(container, model, config, defaults)|Method to add ability to initalize a binder object outside of the constructor.|
 
 Sample data:
 ```javascript
