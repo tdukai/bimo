@@ -374,9 +374,9 @@ window.bimo.Bind = function Bind (options) {
         }
     }
     // Set defaults
-    self.twoWay = self.twoWay === undefined ? true : self.twoWay;
-    self.event = self.event || 'change';
-    self.property = self.property || 'value';
+    self.twoWay = self.twoWay === undefined ? options.defaults.twoWay : self.twoWay;
+    self.event = self.event || options.defaults.event;
+    self.property = self.property || options.defaults.property;
     self.elements = options.config.elements || null;
     self.selector = options.config.selector || null;
     // Load configuration keys
@@ -464,14 +464,21 @@ window.bimo.Binder = function Binder (options) {
     * @param {DOM object} container - container node element for the binding
     * @param {object} model - data model
     * @param {object} config - binding configuration objects
+    * @param {object} defaults - default values for bind objects
     */
-    self.init = function init (container, model, config) {
+    self.init = function init (container, model, config, defaults) {
         var key;
         // Update references
         self.container = container === undefined ? document : (typeof container === 'string' ? document.querySelector(container) : container);
         self.model = model;
         // Create bindings
         if (config) {
+            // Set default initial values
+            defaults = defaults || {
+                twoWay: true,
+                event: 'change',
+                property: 'value'
+            };
             // Loop over all the configuration elements
             for (key in config) {
                 if (config.hasOwnProperty(key)) {
@@ -483,7 +490,8 @@ window.bimo.Binder = function Binder (options) {
                                 container: self.container,
                                 model: self.model,
                                 key: key,
-                                config: config[key][i]
+                                config: config[key][i],
+                                defaults: defaults
                             });
                             self.binds[key].push(item);
                         }
@@ -492,7 +500,8 @@ window.bimo.Binder = function Binder (options) {
                             container: self.container,
                             model: self.model,
                             key: key,
-                            config: config[key]
+                            config: config[key],
+                            defaults: defaults
                         });
                     }
                 }
@@ -526,6 +535,6 @@ window.bimo.Binder = function Binder (options) {
 
     // Initialize binding
     if (options.model && options.config) {
-        self.init(self.container, self.model, options.config);
+        self.init(self.container, self.model, options.config, options.defaults);
     }
 };
