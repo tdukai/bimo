@@ -432,7 +432,10 @@ var binder = new bimo.Binder({
                 selector: '.js-state-name',
                 twoWay: false,  // Disables default 2 way binding (this is a readonly field)
                 read: function (value) {    // Provides an intercept method to transform original value
-                    return lookups.states[value];
+                    for (var i, len = this.elements.length; i < len; i++) {
+                        var control = this.elements[i];
+                        control.innerHTML = lookups.states[value];
+                    }
                 }
             }
         ],
@@ -546,9 +549,10 @@ Options:
 |events|object|Holder object for any valid handler to be wired up to target control||
 |options|string/function|Provides options for combobox in key-value hash format|SELECT control only|
 |placeHolder| string | Default "empty" option for select control|SELECT control only|
-|read|function|Intercept method reading FROM model to control. Method context is set to the Bind object parameters passed are the "value" from model and the HTML "control" associated with the bind. If multiple controls are associated then it will be called multiple times|| 
-|write|function|Intercept method writing TO model from control. Method context is set to the Bind object parameters passed are the "value" and the HTML "control" associated with the bind. If multiple controls are associated then it will be called multiple times|| 
+|read|function|Intercept method reading FROM model to control. Method context is set to the Bind object parameters passed are the "value" from model and the HTML "control" associated with the bind.|| 
+|write|function|Intercept method writing TO model from control. Method context is set to the Bind object parameters passed are the "value" and the HTML "control" associated with the bind.|| 
 
+### Note: If you defined read/write methods the responsibility of reading from HTML controls or writing into them must be implemented in there!
 
 # Bind
 Small class represent a single connection in binder (binds property - hash collection)

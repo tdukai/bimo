@@ -491,20 +491,21 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Sets the value for HTML control */
-    setValue = function setValue (control, value) {
+    setValue = function setValue (value) {
         // Apply formatting if exists
         if (typeof self.read === 'function') {
-            value = self.read.call(self, value, control);
-        }
-        if (!isEmpty(control) && !isEmpty(value)) {
+            self.read.call(self, value);
+        } else if (!isEmpty(self.elements) && !isEmpty(value)) {
             // Assign value
-            if (['SELECT', 'INPUT', 'TEXTAREA'].indexOf(control.nodeName) !== -1) {
-                if (control[self.property] !== value) {
-                    control[self.property] = value;
-                }
-            } else {
-                if (control.innerHTML !== value) {
-                    control.innerHTML = value;
+            for (var i = 0, len = self.elements.length; i < len; i++) {
+                if (['SELECT', 'INPUT', 'TEXTAREA'].indexOf(self.elements[i].nodeName) !== -1) {
+                    if (self.elements[i][self.property] !== value) {
+                        self.elements[i][self.property] = value;
+                    }
+                } else {
+                    if (self.elements[i].innerHTML !== value) {
+                        self.elements[i].innerHTML = value;
+                    }
                 }
             }
         }
@@ -522,29 +523,9 @@ window.bimo.Bind = function Bind (options) {
 
     /* Event handler for the model value */
     modelChanged = function modelChanged (data) {
-        var i,
-        len,
-        key;
-        // Detect single changeset
-        if (data._single === true) {
-            if (self.elements === null) {
-                setValue(null, data.actual);
-            } else {
-                for (i = 0, len = self.elements.length; i < len; ++i) {
-                    setValue(self.elements[i], data.actual);
-                }
-            }
-        } else {
-            for (key in data) {
-                if (data.hasOwnProperty(key) && self.key === key) {
-                    if (self.elements === null) {
-                        setValue(null, data[key].actual);
-                    } else {
-                        for (i = 0, len = self.elements.length; i < len; ++i) {
-                            setValue(self.elements[i], data[key].actual);
-                        }
-                    }
-                }
+        for (var key in data) {
+            if (data.hasOwnProperty(key) && self.key === key) {
+                setValue(data[key].actual);
             }
         }
     };
@@ -563,15 +544,11 @@ window.bimo.Bind = function Bind (options) {
             i = 0;
             len = self.elements.length;
             for (i = 0; i < len; ++i) {
-                var el = self.elements[i];
-                if (el.nodeName === 'SELECT') {
-                    addOptions(el, self.model[self.key]);
-                } else if (el.nodeName === 'INPUT') {
-                    setValue(el, self.model[self.key]);
-                } else {
-                    setValue(el, self.model[self.key]);
+                if (self.elements[i].nodeName === 'SELECT') {
+                    addOptions(self.elements[i], self.model[self.key]);
                 }
             }
+            setValue(self.model[self.key]);
         }
         // Bind to model watch event
         self.model._watch(self.key, modelChanged);
