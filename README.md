@@ -549,8 +549,8 @@ Options:
 |events|object|Holder object for any valid handler to be wired up to target control||
 |options|string/function|Provides options for combobox in key-value hash format|SELECT control only|
 |placeHolder| string | Default "empty" option for select control|SELECT control only|
-|read|function|Intercept method reading FROM model to control. Method context is set to the Bind object parameters passed are the "value" from model and the HTML "control" associated with the bind.|| 
-|write|function|Intercept method writing TO model from control. Method context is set to the Bind object parameters passed are the "value" and the HTML "control" associated with the bind.|| 
+|read|function|Intercept method reading FROM model to control. Method context is set to the Bind object parameters passed are the "value" from model and the HTML "control" associated with the bind.||
+|write|function|Intercept method writing TO model from control. Method context is set to the Bind object parameters passed are the "value" and the HTML "control" associated with the bind.||
 
 ### Note: If you defined read/write methods the responsibility of reading from HTML controls or writing into them must be implemented in there!
 

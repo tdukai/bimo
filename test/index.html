@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sample</title>
+</head>
+<body>
+        <input type="button" value="Bind" id="bindBtn">
+        <input type="button" value="Unbind" id="unbindBtn" disabled="disabled">
+        <input type="button" value="Revert" id="revertBtn">
+        <input type="button" value="Suspend Model" id="suspendBtn">
+        <input type="button" value="Resume Model" id="resumeBtn" disabled="disabled">
+        <p>Activate console to see messages from watch event. Click BIND to start!</p>
+        <br />
+        <div id="page-container">
+            State: <select class="js-state"></select> Selected state name: <span class="js-state-name">na</span><br /><br />
+            City: <input type="text" class="js-city" placeholder="City"><br /><br />
+            Name: <input type="text" class="js-name" placeholder="User name"><br /><br />
+            Member-1: <input type="checkbox" name="member-1" class="js-membership"><br /><br />
+            Member-2: <input type="checkbox" name="member-2" class="js-membership"><br /><br />
+            Gender: <input type="radio" name="gender" value="male"> Male, <input type="radio" name="gender" value="female"> Female<br /><br />
+            Birthday: <input type="DATE" class="js-birthday"><br /><br />
+            Age: <input type="number" class="js-age"><br /><br />
+            Car: <select class="js-cars" multiple="multiple" style="width: 100px;height:100px;">
+                    <option value="volvo">Volvo</option>
+                    <option value="saab">Saab</option>
+                    <option value="mercedes">Mercedes</option>
+                    <option value="audi">Audi</option>
+                    <option value="ferrari">Ferrari</option>
+                    <option value="trabant">Trabant</option>
+                </select>
+            <br /><br />
+            Movies:
+            <input type="checkbox" name="movies" value="thriller"> Thriller,
+            <input type="checkbox" name="movies" value="comedy"> Comedy,
+            <input type="checkbox" name="movies" value="romantic"> Romantic,
+            <input type="checkbox" name="movies" value="action"> Action,
+            <input type="checkbox" name="movies" value="sci-fi"> Sci-Fi
+        </div>
+    </div>
+    <div id="tools">
+        <textarea id="json-out" rows="20" cols="80" value="" ></textarea>
+    </div>
+
+    <script src="../src/model.js"></script>
+    <script src="../src/binder.js"></script>
+    <script src="sample.js"></script>
+
+</body>
+</html>
