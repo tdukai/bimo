@@ -231,7 +231,7 @@ var binderAddress = new bimo.Binder({
                 selector: '.js-state-name',
                 twoWay: false, // Disable 2 way binding this part is readonly
                 read: function (value) {
-                    for (var i, len = this.elements.length; i < len; i++) {
+                    for (var i = 0, len = this.elements.length; i < len; i++) {
                         var control = this.elements[i];
                         control.innerHTML = lookups.states[value];
                     }
