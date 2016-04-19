@@ -35,7 +35,7 @@ gulp.task('bundle', function() {
         .pipe(gulp.dest('dist'));
     // Create individual files compressed 
     gulp.src(bundle)
-        .pipe(plugins.uglify())
+        .pipe(plugins.uglify().on('error', plugins.util.log))
         .pipe(plugins.rename({ extname: '.min.js' }))
         .pipe(gulp.dest('dist'));
     // Create individual files gzip compressed

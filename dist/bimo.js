@@ -800,7 +800,14 @@ window.bimo.Binder = function Binder (options) {
     self.init = function init (container, model, config, defaults) {
         var key;
         // Update references
-        self.container = container === undefined ? document : (typeof container === 'string' ? document.querySelector(container) : container);
+        if (container === undefined || container === null) {
+            self.container = document;
+        } else if (typeof container === 'string') {
+            self.container = document.querySelector(container);
+            if (self.container === null) {
+                throw new Error(['"', container, '" container selector not found!']);
+            }
+        }
         self.model = model;
         // Create bindings
         if (config) {
