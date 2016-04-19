@@ -1,4 +1,5 @@
 /*global window, document */
+"use strict";
 
 window.bimo = window.bimo || {};
 
@@ -10,7 +11,6 @@ window.bimo = window.bimo || {};
 * @param {object} options
 */
 window.bimo.Bind = function Bind (options) {
-    "use strict";
     var self = this,
     key,
     _handlers = {},
@@ -382,15 +382,29 @@ window.bimo.Bind = function Bind (options) {
 * @param {object} options
 */
 window.bimo.Binder = function Binder (options) {
-    "use strict";
-    var self = this;
+    var self = this,
+    getContainer;
+
+    /* Checks the container */
+    getContainer = function getContainer (container) {
+        var result = container;
+        if (result === undefined || result === null) {
+            result = document;
+        } else if (typeof container === 'string') {
+            result = document.querySelector(result);
+            if (result === null) {
+                throw new Error(['"', container, '" container selector not found!']);
+            }
+        }
+        return result;
+    };
 
     /**
     * Container DOM node
     * 
     * @property container - DOM object
     */
-    self.container = options.container === undefined ? document : (typeof options.container === 'string' ? document.querySelector(options.container) : options.container);
+    self.container = getContainer(options.container);
 
     /**
     * Model
@@ -446,13 +460,8 @@ window.bimo.Binder = function Binder (options) {
     self.init = function init (container, model, config, defaults) {
         var key;
         // Update references
-        if (container === undefined || container === null) {
-            self.container = document;
-        } else if (typeof container === 'string') {
-            self.container = document.querySelector(container);
-            if (self.container === null) {
-                throw new Error(['"', container, '" container selector not found!']);
-            }
+        if (container) {
+            self.container = getContainer(container);
         }
         self.model = model;
         // Create bindings
