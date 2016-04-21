@@ -1,9 +1,6 @@
 /*global window */
 "use strict";
 
-var isBrowser = (typeof window !== 'undefined'),
-    isNode = (typeof module !== 'undefined' && typeof module.exports !== 'undefined');
-
 /**
 * Model base class 
 * @class Model
@@ -11,13 +8,21 @@ var isBrowser = (typeof window !== 'undefined'),
 * @constructor
 */
 var Model = function (data) {
-    this._dt = data;
-    this._ev = {};
-    this._df = {};
-    this._sp = false;
-    this._ct = 0;
+    // Add property to hold internal values
+    Object.defineProperty(this, '_', {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: {
+            dt: data,
+            ev: {},
+            df: {},
+            sp: false,
+            ct: 0
+        }
+    });
     // Assign keys
-    for (var key in this._dt) {
+    for (var key in this._.dt) {
         this._addProperty(key);
     }
 };
@@ -40,7 +45,7 @@ Model.prototype._isObject = function _isObject (obj) {
 * @return {object} model content in simple javascript object
 */
 Model.prototype._toObject = function _toObject () {
-    return this._dt;
+    return this._.dt;
 };
 
 /**
@@ -50,8 +55,9 @@ Model.prototype._toObject = function _toObject () {
 * @return {undefined}
 */
 Model.prototype._suspend = function _suspend () {
-    this._sp = true;
-    this._ct = 0;
+    var self = this;
+    self._.sp = true;
+    self._.ct = 0;
 };
 
 /**
@@ -62,17 +68,17 @@ Model.prototype._suspend = function _suspend () {
 */
 Model.prototype._resume = function _resume () {
     var self = this;
-    self._sp = false;
-    if (self._ct > 0) {
-        self._ct = 0;
+    self._.sp = false;
+    if (self._.ct > 0) {
+        self._.ct = 0;
         var list = [],
         i,
         len;
-        for (var key in self._dt) {
-            if (self._dt.hasOwnProperty(key) && Array.isArray(self._ev[key])) {
-                for (i = 0, len = self._ev[key].length; i < len; i++) {
-                    if (list.indexOf(self._ev[key][i]) === -1) {
-                        list.push(self._ev[key][i]);
+        for (var key in self._.dt) {
+            if (self._.dt.hasOwnProperty(key) && Array.isArray(self._.ev[key])) {
+                for (i = 0, len = self._.ev[key].length; i < len; i++) {
+                    if (list.indexOf(self._.ev[key][i]) === -1) {
+                        list.push(self._.ev[key][i]);
                     }
                 }
             }
@@ -80,7 +86,7 @@ Model.prototype._resume = function _resume () {
         // Run all distinct methods and send argument the cumulated result
         for (i = 0, len = list.length; i < len; i++) {
             if (typeof list[i] === 'function') {
-                list[i].call(self, self._df);
+                list[i].call(self, self._.df);
             }
         }
     }
@@ -93,7 +99,7 @@ Model.prototype._resume = function _resume () {
 * @return {object} all changed keys with previous actual and original values
 */
 Model.prototype._delta = function _delta () {
-    return this._df;
+    return this._.df;
 };
 
 /**
@@ -103,7 +109,7 @@ Model.prototype._delta = function _delta () {
 * @return {undefined} 
 */
 Model.prototype._reset = function _reset () {
-    this._df = {};
+    this._.df = {};
 };
 
 /**
@@ -116,8 +122,8 @@ Model.prototype._reset = function _reset () {
 Model.prototype._revert = function _revert (name) {
     var self = this,
     revert = function (name) {
-        if (self._df[name]) {
-            self[name] = self._df[name].original;
+        if (self._.df[name]) {
+            self[name] = self._.df[name].original;
         }
     };
     // Check the type
@@ -128,9 +134,9 @@ Model.prototype._revert = function _revert (name) {
             revert(name[i]);
         }
     } else if (name === undefined) {
-        for (var key in self._dt) {
-            if (self._dt.hasOwnProperty(key)) {
-                revert(self._dt[key]);
+        for (var key in self._.dt) {
+            if (self._.dt.hasOwnProperty(key)) {
+                revert(self._.dt[key]);
             }
         }
     }
@@ -176,8 +182,8 @@ Model.prototype._watch = function _watch () {
         } else if (self._isObject(param)) {
             values = param;
         } else if (typeof event === 'function') {
-            for (key in self._dt) {
-                if (self._dt.hasOwnProperty(key) && !self._isObject(self._dt[key])) {
+            for (key in self._.dt) {
+                if (self._.dt.hasOwnProperty(key) && !self._isObject(self._.dt[key])) {
                     values[key] = event;
                 }
             }
@@ -185,10 +191,10 @@ Model.prototype._watch = function _watch () {
         // Loop through all the names and create entry in events
         for (key in values) {
             if (values.hasOwnProperty(key)) {
-                if (self._ev[key] && self._ev[key].indexOf(event) === -1) {
-                    self._ev[key].push(values[key]);
+                if (self._.ev[key] && self._.ev[key].indexOf(event) === -1) {
+                    self._.ev[key].push(values[key]);
                 } else {
-                    self._ev[key] = [values[key]];
+                    self._.ev[key] = [values[key]];
                 }
             }
         }
@@ -211,14 +217,14 @@ Model.prototype._unwatch = function _unwatch () {
     i,
     len,
     remove = function remove (key) {
-        if (typeof event === 'function' && Array.isArray(self._ev[key])) {
-            var pos = self._ev[key].indexOf(event);
+        if (typeof event === 'function' && Array.isArray(self._.ev[key])) {
+            var pos = self._.ev[key].indexOf(event);
             if (pos > -1) {
-                self._ev[key] = self._ev[key].splice(pos, 1);
+                self._.ev[key] = self._.ev[key].splice(pos, 1);
             }
         } else {
-            self._ev[key] = null;
-            delete self._ev[key];
+            self._.ev[key] = null;
+            delete self._.ev[key];
         }
     };
     // Check arguments passed in
@@ -250,14 +256,14 @@ Model.prototype._unwatch = function _unwatch () {
                 }
             }
         } else {
-            for (key in self._dt) {
-                if (self._dt.hasOwnProperty(key) && !self._isObject(self._dt[key])) {
+            for (key in self._.dt) {
+                if (self._.dt.hasOwnProperty(key) && !self._isObject(self._.dt[key])) {
                     remove(key);
                 }
             }
         }
     } else {
-        self._ev = {}; // Remove all events
+        self._.ev = {}; // Remove all events
     }
 };
 
@@ -289,12 +295,12 @@ Model.prototype._addProperty = function _addProperty (key) {
         return result;
     };
     // Only create property against own key and non-object element
-    if (self._dt.hasOwnProperty(key) && !self._isObject(self._dt[key])) {
+    if (self._.dt.hasOwnProperty(key) && !self._isObject(self._.dt[key])) {
         Object.defineProperty(self, key, {
             configurable: false,
             enumerable: true,
             get: function () {
-                var result = self._dt[key];
+                var result = self._.dt[key];
                 // Look for formatter method
                 if (typeof self[key + 'Read'] === 'function') {
                     result = self[key + 'Read'](result);
@@ -307,34 +313,34 @@ Model.prototype._addProperty = function _addProperty (key) {
                     actual = self[key + 'Write'](actual);
                 }
                 // Get previous value
-                var previous = self._dt[key],
+                var previous = self._.dt[key],
                 arg = {};
                 if (previous !== actual) {
                     // Update with new value
-                    self._dt[key] = actual;
+                    self._.dt[key] = actual;
                     // Update delta
-                    self._df[key] = self._df[key] || { original: previous };
-                    self._df[key].actual = actual;
-                    self._df[key].previous = previous;
+                    self._.df[key] = self._.df[key] || { original: previous };
+                    self._.df[key].actual = actual;
+                    self._.df[key].previous = previous;
                     // Count event if suspended
-                    if (self._sp) {
-                        self._ct++; // Count changes
-                    } else if (Array.isArray(self._ev[key])) { // Otherwise run events
+                    if (self._.sp) {
+                        self._.ct++; // Count changes
+                    } else if (Array.isArray(self._.ev[key])) { // Otherwise run events
                         // Collect all keys from diff
                         arg[key] = {};
-                        for (var k in self._df[key]) {
-                            if (self._df[key].hasOwnProperty(k)) {
-                                arg[key][k] = self._df[key][k];
+                        for (var k in self._.df[key]) {
+                            if (self._.df[key].hasOwnProperty(k)) {
+                                arg[key][k] = self._.df[key][k];
                             }
                         }
                         // If value reverted back to original remove it
-                        if (isEqual(self._df[key].actual, self._df[key].original)) {
-                            delete self._df[key];
+                        if (isEqual(self._.df[key].actual, self._.df[key].original)) {
+                            delete self._.df[key];
                         }
                         // Run event
-                        for (var i = 0, len = self._ev[key].length; i < len; i++) {
-                            if (typeof self._ev[key][i] === 'function') {
-                                self._ev[key][i].call(self._ev[key][i], arg);
+                        for (var i = 0, len = self._.ev[key].length; i < len; i++) {
+                            if (typeof self._.ev[key][i] === 'function') {
+                                self._.ev[key][i].call(self._.ev[key][i], arg);
                             }
                         }
                     }
@@ -344,11 +350,9 @@ Model.prototype._addProperty = function _addProperty (key) {
     }
 };
 
-if (isBrowser) {
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = { Model: Model };
+} else {
     window.bimo = window.bimo || {};
     window.bimo.Model = Model;
-} else if (isNode) {
-    module.exports = {
-        Model: Model
-    };
 }
