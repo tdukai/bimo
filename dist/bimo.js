@@ -529,7 +529,7 @@ window.bimo.Bind = function Bind (options) {
     modelChanged = function modelChanged (data) {
         for (var key in data) {
             if (data.hasOwnProperty(key) && self.key === key) {
-                setValue(data[key].actual);
+                setValue(self.model[key]);
             }
         }
     };
