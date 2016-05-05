@@ -169,8 +169,7 @@ model._unwatch({
 });
 ```
 
->##### The model only supports single level values for simplicity, so if the json data has multiple components it needs to be handled independently. Generally more flat the model is the better. The wrapping process leaves the object properties alone:
->
+>##### Note: The model only supports single level values for simplicity, so if the json data has multiple components it needs to be handled independently. Generally more flat the model is the better. The wrapping process leaves the object properties alone:
 
 ```javascript
 // Multi-level JSON data
@@ -300,6 +299,9 @@ Quick Reference:
 |unbind(callback)|Execute unbind() methods on each member of the binds hash table of Bind objects. If callback is specified it will be called after binding process is completed|
 |run('methodName')|Expose method to specify any method as string to executed on all bind objects, example bind() is syntax sugar on run('bind') or unbind() on run('unbind')|
 |init(container, model, config, defaults)|Method to add ability to initalize a binder object outside of the constructor.|
+
+>##### Note: if you are using multiple level object (multiple models) then use multiple binders also. Each model you want to connect to HTML controls should have it's own binder object.
+
 
 Sample data:
 ```javascript
@@ -552,7 +554,7 @@ Options:
 |read|function|Intercept method reading FROM model to control. Method context is set to the Bind object parameters passed are the "value" from model and the HTML "control" associated with the bind.||
 |write|function|Intercept method writing TO model from control. Method context is set to the Bind object parameters passed are the "value" and the HTML "control" associated with the bind.||
 
-### Note: If you defined read/write methods the responsibility of reading from HTML controls or writing into them must be implemented in there!
+>##### Note: If you defined read/write methods the responsibility of reading from HTML controls or writing into them must be implemented in there!
 
 # Bind
 Small class represent a single connection in binder (binds property - hash collection)
