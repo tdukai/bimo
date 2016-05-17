@@ -8,13 +8,15 @@
 * @constructor
 */
 var Model = function (data) {
+    // Check if data already a model an unwrap it
+    var dt = (typeof data._toObject === 'function') ? data._toObject() : data;
     // Add property to hold internal values
     Object.defineProperty(this, '_', {
         enumerable: false,
         configurable: false,
         writable: false,
         value: {
-            dt: data,
+            dt: dt,
             ev: {},
             df: {},
             sp: false,
