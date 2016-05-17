@@ -369,7 +369,10 @@ window.bimo.Bind = function Bind (options) {
         if (isEmpty(self.selector)) {
             self.elements = null;
         } else {
-            self.elements = self.container.querySelectorAll(self.selector);
+            self.elements = (typeof self.selector === 'string') ? self.container.querySelectorAll(self.selector) : self.selector;
+            if (self.elements === null) {
+                throw new Error(['"', self.selector.toString(), '" element not found!']);
+            }
         }
     }
 };
