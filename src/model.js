@@ -36,8 +36,34 @@ var Model = function (data) {
 * @param {any} variable
 * @return {boolean} True if event added to the list
 */
-Model.prototype._isObject = function _isObject (obj) {
+Model.prototype._isObject = function (obj) {
     return (Object.prototype.toString.call(obj) === '[object Object]');
+};
+
+/**
+* Clones array or object
+*
+* @method _clone
+* @param {array/object} value
+* @return {array/object} clone of original array or object
+*/
+Model.prototype._clone = function (value) {
+    var self = this,
+    result;
+    if (Array.isArray(value)) {
+        result = [];
+        for (var i = 0, len = value.length; i < len; i++) {
+            result.push(value[i]);
+        }
+    } else if (self._isObject(value)) {
+        result = {};
+        for (var key in value) {
+            if (value.hasOwnProperty(key)) {
+                result[key] = value[key];
+            }
+        }
+    }
+    return result;
 };
 
 /**
@@ -46,8 +72,9 @@ Model.prototype._isObject = function _isObject (obj) {
 * @method _toObject
 * @return {object} model content in simple javascript object
 */
-Model.prototype._toObject = function _toObject () {
-    return this._.dt;
+Model.prototype._toObject = function () {
+    var self = this;
+    return self._clone(self._.dt);
 };
 
 /**
@@ -56,7 +83,7 @@ Model.prototype._toObject = function _toObject () {
 * @method _suspend
 * @return {undefined}
 */
-Model.prototype._suspend = function _suspend () {
+Model.prototype._suspend = function () {
     var self = this;
     self._.sp = true;
     self._.ct = 0;
@@ -68,7 +95,7 @@ Model.prototype._suspend = function _suspend () {
 * @method _resume
 * @return {undefined}
 */
-Model.prototype._resume = function _resume () {
+Model.prototype._resume = function () {
     var self = this;
     self._.sp = false;
     if (self._.ct > 0) {
@@ -100,8 +127,9 @@ Model.prototype._resume = function _resume () {
 * @method _delta
 * @return {object} all changed keys with previous actual and original values
 */
-Model.prototype._delta = function _delta () {
-    return this._.df;
+Model.prototype._delta = function () {
+    var self = this;
+    return self._clone(self._.df);
 };
 
 /**
@@ -110,7 +138,7 @@ Model.prototype._delta = function _delta () {
 * @method _reset
 * @return {undefined} 
 */
-Model.prototype._reset = function _reset () {
+Model.prototype._reset = function () {
     this._.df = {};
 };
 
@@ -121,11 +149,11 @@ Model.prototype._reset = function _reset () {
 * @params {undefined/string/array} name(s) of properties, if none specified all keys content will revert back
 * @return {undefined} 
 */
-Model.prototype._revert = function _revert (name) {
+Model.prototype._revert = function (name) {
     var self = this,
-    revert = function (name) {
-        if (self._.df[name]) {
-            self[name] = self._.df[name].original;
+    revert = function (n) {
+        if (self._.df[n]) {
+            self[n] = self._.df[n].original;
         }
     };
     // Check the type
@@ -138,10 +166,49 @@ Model.prototype._revert = function _revert (name) {
     } else if (name === undefined) {
         for (var key in self._.dt) {
             if (self._.dt.hasOwnProperty(key)) {
-                revert(self._.dt[key]);
+                revert(key);
             }
         }
     }
+};
+
+/**
+* Checks if the whole model, a group or single property changed
+*
+* @method _changed
+* @params {undefined/string/array} name(s) of properties
+* @return {boolean} true if model changed or if single property changed
+*/
+Model.prototype._changed = function (name) {
+    var self = this,
+    delta = self._delta(),
+    result = false,
+    changed = function (n) {
+        var r = false;
+        if (delta[n] && delta[n].original !== self[n]) {
+            r = true;
+        }
+        return r;
+    };
+    // Check the type
+    if (typeof name === 'string') {
+        result = changed(name);
+    } else if (Array.isArray(name)) {
+        for (var i = 0, len = name.length; i < len; i++) {
+            if (changed(name[i]) && result === false) {
+                result = true;
+                break;
+            }
+        }
+    } else if (name === undefined) {
+        for (var key in delta) {
+            if (delta.hasOwnProperty(key)) {
+                result = true;
+                break;
+            }
+        }
+    }
+    return result;
 };
 
 /**

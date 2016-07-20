@@ -10,7 +10,7 @@ window.bimo = window.bimo || {};
 * @constructor
 * @param {object} options
 */
-window.bimo.Bind = function Bind (options) {
+window.bimo.Bind = function (options) {
     var self = this,
     key,
     _handlers = {},
@@ -34,7 +34,7 @@ window.bimo.Bind = function Bind (options) {
     options.config = options.config || {};
 
     /* Add event handler */
-    addEvent = function addEvent (el, type, handler) {
+    addEvent = function (el, type, handler) {
         if (el.attachEvent) {
             el.attachEvent('on' + type, handler);
         } else {
@@ -43,7 +43,7 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Load options for SELECT type HTML controls */
-    addOptions = function addOptions (control, selected) {
+    addOptions = function (control, selected) {
         var opt,
         items,
         key;
@@ -91,7 +91,7 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Remove event handler */
-    removeEvent = function removeEvent (el, type, handler) {
+    removeEvent = function (el, type, handler) {
         // if (el.removeEventListener) not working in IE11
         if (el.detachEvent) {
             el.detachEvent('on' + type, handler);
@@ -101,7 +101,7 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Wires up custom event */
-    customEvent = function customEvent (key, handler) {
+    customEvent = function (key, handler) {
         var result = function (e) {
             handler.call(self, e);
         };
@@ -110,17 +110,17 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Checks if it has valid element(s) */
-    isEmpty = function isEmpty (obj) {
+    isEmpty = function (obj) {
         return (obj === undefined || obj === null);
     };
 
     /* Checks if something a real object */
-    isObject = function isObject (obj) {
+    isObject = function (obj) {
         return (Object.prototype.toString.call(obj) === '[object Object]');
     };
 
     /* Gets the value from the HTML control */
-    getValue = function getValue (control) {
+    getValue = function (control) {
         var result;
         if (control !== null) {
             if (['SELECT', 'INPUT', 'TEXTAREA'].indexOf(control.nodeName) !== -1) {
@@ -137,7 +137,7 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Sets the value for HTML control */
-    setValue = function setValue (value) {
+    setValue = function (value) {
         // Apply formatting if exists
         if (typeof self.read === 'function') {
             self.read.call(self, value);
@@ -158,7 +158,7 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Event handler for HTML control changed  */
-    controlChanged = function controlChanged (e) {
+    controlChanged = function (e) {
         if (self.twoWay) {
             var value = getValue(e.target);
             if (value !== undefined) {
@@ -168,7 +168,7 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Event handler for the model value */
-    modelChanged = function modelChanged (data) {
+    modelChanged = function (data) {
         for (var key in data) {
             if (data.hasOwnProperty(key) && self.key === key) {
                 setValue(self.model[key]);
@@ -181,7 +181,7 @@ window.bimo.Bind = function Bind (options) {
     * 
     * @method bind
     */
-    self.bind = function bind (cb) {
+    self.bind = function (cb) {
         // Assign initial value from model and prepare options etc
         var i,
         len,
@@ -228,7 +228,7 @@ window.bimo.Bind = function Bind (options) {
     * 
     * @method unbind
     */
-    self.unbind = function unbind (cb) {
+    self.unbind = function (cb) {
         var i,
         len,
         key;
@@ -384,12 +384,12 @@ window.bimo.Bind = function Bind (options) {
 * @constructor
 * @param {object} options
 */
-window.bimo.Binder = function Binder (options) {
+window.bimo.Binder = function (options) {
     var self = this,
     getContainer;
 
     /* Checks the container */
-    getContainer = function getContainer (container) {
+    getContainer = function (container) {
         var result = container;
         if (result === undefined || result === null) {
             result = document;
@@ -430,7 +430,7 @@ window.bimo.Binder = function Binder (options) {
     * @method run
     * @param {string} method name
     */
-    self.run = function run (methodName) {
+    self.run = function (methodName) {
         var execute = function execute (item) {
             if (typeof item[methodName] === 'function') {
                 item[methodName].call(item);
@@ -460,7 +460,7 @@ window.bimo.Binder = function Binder (options) {
     * @param {object} config - binding configuration objects
     * @param {object} defaults - default values for bind objects
     */
-    self.init = function init (container, model, config, defaults) {
+    self.init = function (container, model, config, defaults) {
         var key;
         // Update references
         if (container) {
@@ -510,7 +510,7 @@ window.bimo.Binder = function Binder (options) {
     * 
     * @method bind
     */
-    self.bind = function bind (cb) {
+    self.bind = function (cb) {
         self.run('bind');
         if (typeof cb === 'function') {
             cb.call(self);
@@ -522,7 +522,7 @@ window.bimo.Binder = function Binder (options) {
     * 
     * @method remove
     */
-    self.unbind = function unbind (cb) {
+    self.unbind = function (cb) {
         self.run('unbind');
         if (typeof cb === 'function') {
             cb.call(self);

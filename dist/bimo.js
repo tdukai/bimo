@@ -36,8 +36,34 @@ var Model = function (data) {
 * @param {any} variable
 * @return {boolean} True if event added to the list
 */
-Model.prototype._isObject = function _isObject (obj) {
+Model.prototype._isObject = function (obj) {
     return (Object.prototype.toString.call(obj) === '[object Object]');
+};
+
+/**
+* Clones array or object
+*
+* @method _clone
+* @param {array/object} value
+* @return {array/object} clone of original array or object
+*/
+Model.prototype._clone = function (value) {
+    var self = this,
+    result;
+    if (Array.isArray(value)) {
+        result = [];
+        for (var i = 0, len = value.length; i < len; i++) {
+            result.push(value[i]);
+        }
+    } else if (self._isObject(value)) {
+        result = {};
+        for (var key in value) {
+            if (value.hasOwnProperty(key)) {
+                result[key] = value[key];
+            }
+        }
+    }
+    return result;
 };
 
 /**
@@ -46,8 +72,9 @@ Model.prototype._isObject = function _isObject (obj) {
 * @method _toObject
 * @return {object} model content in simple javascript object
 */
-Model.prototype._toObject = function _toObject () {
-    return this._.dt;
+Model.prototype._toObject = function () {
+    var self = this;
+    return self._clone(self._.dt);
 };
 
 /**
@@ -56,7 +83,7 @@ Model.prototype._toObject = function _toObject () {
 * @method _suspend
 * @return {undefined}
 */
-Model.prototype._suspend = function _suspend () {
+Model.prototype._suspend = function () {
     var self = this;
     self._.sp = true;
     self._.ct = 0;
@@ -68,7 +95,7 @@ Model.prototype._suspend = function _suspend () {
 * @method _resume
 * @return {undefined}
 */
-Model.prototype._resume = function _resume () {
+Model.prototype._resume = function () {
     var self = this;
     self._.sp = false;
     if (self._.ct > 0) {
@@ -100,8 +127,9 @@ Model.prototype._resume = function _resume () {
 * @method _delta
 * @return {object} all changed keys with previous actual and original values
 */
-Model.prototype._delta = function _delta () {
-    return this._.df;
+Model.prototype._delta = function () {
+    var self = this;
+    return self._clone(self._.df);
 };
 
 /**
@@ -110,7 +138,7 @@ Model.prototype._delta = function _delta () {
 * @method _reset
 * @return {undefined} 
 */
-Model.prototype._reset = function _reset () {
+Model.prototype._reset = function () {
     this._.df = {};
 };
 
@@ -121,11 +149,11 @@ Model.prototype._reset = function _reset () {
 * @params {undefined/string/array} name(s) of properties, if none specified all keys content will revert back
 * @return {undefined} 
 */
-Model.prototype._revert = function _revert (name) {
+Model.prototype._revert = function (name) {
     var self = this,
-    revert = function (name) {
-        if (self._.df[name]) {
-            self[name] = self._.df[name].original;
+    revert = function (n) {
+        if (self._.df[n]) {
+            self[n] = self._.df[n].original;
         }
     };
     // Check the type
@@ -138,10 +166,49 @@ Model.prototype._revert = function _revert (name) {
     } else if (name === undefined) {
         for (var key in self._.dt) {
             if (self._.dt.hasOwnProperty(key)) {
-                revert(self._.dt[key]);
+                revert(key);
             }
         }
     }
+};
+
+/**
+* Checks if the whole model, a group or single property changed
+*
+* @method _changed
+* @params {undefined/string/array} name(s) of properties
+* @return {boolean} true if model changed or if single property changed
+*/
+Model.prototype._changed = function (name) {
+    var self = this,
+    delta = self._delta(),
+    result = false,
+    changed = function (n) {
+        var r = false;
+        if (delta[n] && delta[n].original !== self[n]) {
+            r = true;
+        }
+        return r;
+    };
+    // Check the type
+    if (typeof name === 'string') {
+        result = changed(name);
+    } else if (Array.isArray(name)) {
+        for (var i = 0, len = name.length; i < len; i++) {
+            if (changed(name[i]) && result === false) {
+                result = true;
+                break;
+            }
+        }
+    } else if (name === undefined) {
+        for (var key in delta) {
+            if (delta.hasOwnProperty(key)) {
+                result = true;
+                break;
+            }
+        }
+    }
+    return result;
 };
 
 /**
@@ -370,7 +437,7 @@ window.bimo = window.bimo || {};
 * @constructor
 * @param {object} options
 */
-window.bimo.Bind = function Bind (options) {
+window.bimo.Bind = function (options) {
     var self = this,
     key,
     _handlers = {},
@@ -394,7 +461,7 @@ window.bimo.Bind = function Bind (options) {
     options.config = options.config || {};
 
     /* Add event handler */
-    addEvent = function addEvent (el, type, handler) {
+    addEvent = function (el, type, handler) {
         if (el.attachEvent) {
             el.attachEvent('on' + type, handler);
         } else {
@@ -403,7 +470,7 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Load options for SELECT type HTML controls */
-    addOptions = function addOptions (control, selected) {
+    addOptions = function (control, selected) {
         var opt,
         items,
         key;
@@ -451,7 +518,7 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Remove event handler */
-    removeEvent = function removeEvent (el, type, handler) {
+    removeEvent = function (el, type, handler) {
         // if (el.removeEventListener) not working in IE11
         if (el.detachEvent) {
             el.detachEvent('on' + type, handler);
@@ -461,7 +528,7 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Wires up custom event */
-    customEvent = function customEvent (key, handler) {
+    customEvent = function (key, handler) {
         var result = function (e) {
             handler.call(self, e);
         };
@@ -470,17 +537,17 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Checks if it has valid element(s) */
-    isEmpty = function isEmpty (obj) {
+    isEmpty = function (obj) {
         return (obj === undefined || obj === null);
     };
 
     /* Checks if something a real object */
-    isObject = function isObject (obj) {
+    isObject = function (obj) {
         return (Object.prototype.toString.call(obj) === '[object Object]');
     };
 
     /* Gets the value from the HTML control */
-    getValue = function getValue (control) {
+    getValue = function (control) {
         var result;
         if (control !== null) {
             if (['SELECT', 'INPUT', 'TEXTAREA'].indexOf(control.nodeName) !== -1) {
@@ -497,7 +564,7 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Sets the value for HTML control */
-    setValue = function setValue (value) {
+    setValue = function (value) {
         // Apply formatting if exists
         if (typeof self.read === 'function') {
             self.read.call(self, value);
@@ -518,7 +585,7 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Event handler for HTML control changed  */
-    controlChanged = function controlChanged (e) {
+    controlChanged = function (e) {
         if (self.twoWay) {
             var value = getValue(e.target);
             if (value !== undefined) {
@@ -528,7 +595,7 @@ window.bimo.Bind = function Bind (options) {
     };
 
     /* Event handler for the model value */
-    modelChanged = function modelChanged (data) {
+    modelChanged = function (data) {
         for (var key in data) {
             if (data.hasOwnProperty(key) && self.key === key) {
                 setValue(self.model[key]);
@@ -541,7 +608,7 @@ window.bimo.Bind = function Bind (options) {
     * 
     * @method bind
     */
-    self.bind = function bind (cb) {
+    self.bind = function (cb) {
         // Assign initial value from model and prepare options etc
         var i,
         len,
@@ -588,7 +655,7 @@ window.bimo.Bind = function Bind (options) {
     * 
     * @method unbind
     */
-    self.unbind = function unbind (cb) {
+    self.unbind = function (cb) {
         var i,
         len,
         key;
@@ -744,12 +811,12 @@ window.bimo.Bind = function Bind (options) {
 * @constructor
 * @param {object} options
 */
-window.bimo.Binder = function Binder (options) {
+window.bimo.Binder = function (options) {
     var self = this,
     getContainer;
 
     /* Checks the container */
-    getContainer = function getContainer (container) {
+    getContainer = function (container) {
         var result = container;
         if (result === undefined || result === null) {
             result = document;
@@ -790,7 +857,7 @@ window.bimo.Binder = function Binder (options) {
     * @method run
     * @param {string} method name
     */
-    self.run = function run (methodName) {
+    self.run = function (methodName) {
         var execute = function execute (item) {
             if (typeof item[methodName] === 'function') {
                 item[methodName].call(item);
@@ -820,7 +887,7 @@ window.bimo.Binder = function Binder (options) {
     * @param {object} config - binding configuration objects
     * @param {object} defaults - default values for bind objects
     */
-    self.init = function init (container, model, config, defaults) {
+    self.init = function (container, model, config, defaults) {
         var key;
         // Update references
         if (container) {
@@ -870,7 +937,7 @@ window.bimo.Binder = function Binder (options) {
     * 
     * @method bind
     */
-    self.bind = function bind (cb) {
+    self.bind = function (cb) {
         self.run('bind');
         if (typeof cb === 'function') {
             cb.call(self);
@@ -882,7 +949,7 @@ window.bimo.Binder = function Binder (options) {
     * 
     * @method remove
     */
-    self.unbind = function unbind (cb) {
+    self.unbind = function (cb) {
         self.run('unbind');
         if (typeof cb === 'function') {
             cb.call(self);

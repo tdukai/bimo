@@ -15,6 +15,8 @@ Quick Reference:
 |Function|Description|
 |---|---|
 |_delta()|Returns all changeset since creation or last _reset() call|
+|_changed()|Checks if a single, a group or any property changed|
+|_clone()|creates a copy of an array or object - mostly internal use)|
 |_reset()|Clears out tracked changes|
 |_revert()|Reverts back to the original values since creation or last _reset() call|
 |_suspend()|Stops firing events at each change (still tracking)|
@@ -69,6 +71,14 @@ model.age = 42;
 // console log: 
 key 'age', original: 35, previous: 35, actual: 42
 */
+
+// *** _changed() method test:
+// returns true
+model._changed();
+model._changed('age');
+model._changed(['age', 'lastName']);
+// returns false
+model._changed('lastName');
 
 // Change again
 model.age = 28;

@@ -101,8 +101,13 @@ model.address.stateWrite = function (value) {
 function displayModel () {
     var obj = {
         data: model._toObject(),
-        changes: model._delta()
+        changes: {
+            main: {},
+            address: {}
+        }
     };
+    obj.changes.main = model._delta();
+    obj.changes.address = model.address._delta();
     document.querySelector('#json-out').value = JSON.stringify(obj, null, 4);
 }
 
