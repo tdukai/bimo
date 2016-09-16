@@ -53,8 +53,8 @@ window.bimo.Bind = function (options) {
             if (self.placeHolder) {
                 opt = document.createElement('option');
                 opt.value = '';
-                opt.label = self.placeHolder;
-                if (selected === undefined) {
+                opt.innerHTML = self.placeHolder;
+                if (selected === undefined || selected === null || selected === '') {
                     opt.selected = 'selected';
                 }
                 opt.disabled = 'disabled';
@@ -79,7 +79,7 @@ window.bimo.Bind = function (options) {
                     if (items.hasOwnProperty(key)) {
                         opt = document.createElement('option');
                         opt.value = key;
-                        opt.label = items[key];
+                        opt.innerHTML = items[key];
                         if (key === selected) {
                             opt.selected = 'selected';
                         }
