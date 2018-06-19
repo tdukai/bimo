@@ -364,58 +364,68 @@ Model.prototype._addProperty = function _addProperty (key) {
         return result;
     };
     // Only create property against own key and non-object element
-    if (self._.dt.hasOwnProperty(key) && !self._isObject(self._.dt[key])) {
-        Object.defineProperty(self, key, {
-            configurable: false,
-            enumerable: true,
-            get: function () {
-                var result = self._.dt[key];
-                // Look for formatter method
-                if (typeof self[key + 'Read'] === 'function') {
-                    result = self[key + 'Read'](result);
-                }
-                return result;
-            },
-            set: function (actual) {
-                // Check for parser method
-                if (typeof self[key + 'Write'] === 'function') {
-                    actual = self[key + 'Write'](actual);
-                }
-                // Get previous value
-                var previous = self._.dt[key],
-                arg = {};
-                if (previous !== actual) {
-                    // Update with new value
-                    self._.dt[key] = actual;
-                    // Update delta
-                    self._.df[key] = self._.df[key] || { original: previous };
-                    self._.df[key].actual = actual;
-                    self._.df[key].previous = previous;
-                    // Count event if suspended
-                    if (self._.sp) {
-                        self._.ct++; // Count changes
-                    } else if (Array.isArray(self._.ev[key])) { // Otherwise run events
-                        // Collect all keys from diff
-                        arg[key] = {};
-                        for (var k in self._.df[key]) {
-                            if (self._.df[key].hasOwnProperty(k)) {
-                                arg[key][k] = self._.df[key][k];
+    if (self._.dt.hasOwnProperty(key)) { 
+        if (!self._isObject(self._.dt[key])) {
+            Object.defineProperty(self, key, {
+                configurable: false,
+                enumerable: true,
+                get: function () {
+                    var result = self._.dt[key];
+                    // Look for formatter method
+                    if (typeof self[key + 'Read'] === 'function') {
+                        result = self[key + 'Read'](result);
+                    }
+                    return result;
+                },
+                set: function (actual) {
+                    // Check for parser method
+                    if (typeof self[key + 'Write'] === 'function') {
+                        actual = self[key + 'Write'](actual);
+                    }
+                    // Get previous value
+                    var previous = self._.dt[key],
+                    arg = {};
+                    if (previous !== actual) {
+                        // Update with new value
+                        self._.dt[key] = actual;
+                        // Update delta
+                        self._.df[key] = self._.df[key] || { original: previous };
+                        self._.df[key].actual = actual;
+                        self._.df[key].previous = previous;
+                        // Count event if suspended
+                        if (self._.sp) {
+                            self._.ct++; // Count changes
+                        } else if (Array.isArray(self._.ev[key])) { // Otherwise run events
+                            // Collect all keys from diff
+                            arg[key] = {};
+                            for (var k in self._.df[key]) {
+                                if (self._.df[key].hasOwnProperty(k)) {
+                                    arg[key][k] = self._.df[key][k];
+                                }
                             }
-                        }
-                        // If value reverted back to original remove it
-                        if (isEqual(self._.df[key].actual, self._.df[key].original)) {
-                            delete self._.df[key];
-                        }
-                        // Run event
-                        for (var i = 0, len = self._.ev[key].length; i < len; i++) {
-                            if (typeof self._.ev[key][i] === 'function') {
-                                self._.ev[key][i].call(self._.ev[key][i], arg);
+                            // If value reverted back to original remove it
+                            if (isEqual(self._.df[key].actual, self._.df[key].original)) {
+                                delete self._.df[key];
+                            }
+                            // Run event
+                            for (var i = 0, len = self._.ev[key].length; i < len; i++) {
+                                if (typeof self._.ev[key][i] === 'function') {
+                                    self._.ev[key][i].call(self._.ev[key][i], arg);
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        } else {
+            // Assign the object as normal properties
+            Object.defineProperty(this, key, {
+                enumerable: true,
+                configurable: true,
+                writable: true,
+                value: self._.dt[key]
+            });            
+        }    
     }
 };
 
