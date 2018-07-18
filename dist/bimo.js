@@ -429,6 +429,19 @@ Model.prototype._addProperty = function _addProperty (key) {
     }
 };
 
+/**
+* Adds new property to object (only non object properties)
+*
+* @method _add
+* @param {string} key
+* @param {string} value
+* @return {undefined}
+*/
+Model.prototype._add = function _add (key, value) {
+    this._.dt[key] = value;
+    this._addProperty(key);
+};
+
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = { Model: Model };
 } else {
