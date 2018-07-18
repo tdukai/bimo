@@ -561,7 +561,11 @@ window.bimo.Bind = function (options) {
         var result;
         if (control !== null) {
             if (['SELECT', 'INPUT', 'TEXTAREA'].indexOf(control.nodeName) !== -1) {
-                result = control[self.property];
+                if (control.type.toUpperCase() === 'CHECKBOX') {
+                    result = control.checked;
+                } else {
+                    result = control[self.property];
+                }
             } else {
                 result = control.innerHTML;
             }
@@ -582,8 +586,14 @@ window.bimo.Bind = function (options) {
             // Assign value
             for (var i = 0, len = self.elements.length; i < len; i++) {
                 if (['SELECT', 'INPUT', 'TEXTAREA'].indexOf(self.elements[i].nodeName) !== -1) {
-                    if (self.elements[i][self.property] !== value) {
-                        self.elements[i][self.property] = value;
+                    if (self.elements[i].type.toUpperCase() === 'CHECKBOX') {
+                        if (self.elements[i].checked !== value) {
+                            self.elements[i].checked = value;
+                        }
+                    } else {
+                        if (self.elements[i][self.property] !== value) {
+                            self.elements[i][self.property] = value;
+                        }
                     }
                 } else {
                     if (self.elements[i].innerHTML !== value) {
