@@ -1,1 +1,1 @@
-module.exports = require('./dist/model.min.js');
+module.exports = require('./src/model.js');
