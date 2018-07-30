@@ -8,15 +8,13 @@
 * @constructor
 */
 var Model = function (data) {
-    // Check if data already a model an unwrap it
-    var dt = (typeof data._toObject === 'function') ? data._toObject() : data;
     // Add property to hold internal values
     Object.defineProperty(this, '_', {
         enumerable: false,
         configurable: false,
         writable: false,
         value: {
-            dt: dt,
+            dt: this._clone(data),
             ev: {},
             df: {},
             sp: false,
@@ -48,22 +46,7 @@ Model.prototype._isObject = function (obj) {
 * @return {array/object} clone of original array or object
 */
 Model.prototype._clone = function (value) {
-    var self = this,
-    result;
-    if (Array.isArray(value)) {
-        result = [];
-        for (var i = 0, len = value.length; i < len; i++) {
-            result.push(value[i]);
-        }
-    } else if (self._isObject(value)) {
-        result = {};
-        for (var key in value) {
-            if (value.hasOwnProperty(key)) {
-                result[key] = value[key];
-            }
-        }
-    }
-    return result;
+    return JSON.parse(JSON.stringify(value));
 };
 
 /**
