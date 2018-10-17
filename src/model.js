@@ -425,6 +425,35 @@ Model.prototype._add = function _add (key, value) {
     this._addProperty(key);
 };
 
+/**
+* Clears all properties and set them null or empty array
+*
+* @method _clear
+* @return {undefined}
+*/
+Model.prototype._clear = function _clear (values) {
+    values = values || {};
+    var self = this;
+    for (var key in self._.dt) {
+        if (self._.dt.hasOwnProperty(key)) {
+            if (values.hasOwnProperty(key)) {
+                self._.dt[key] = values[key];
+            } else {
+                if (Array.isArray(self._.dt[key])) {
+                    self._.dt[key] = [];
+                } else if (typeof self._.dt[key] === 'boolean') {
+                    self._.dt[key] = false;
+                } else if (typeof self._.dt[key] === 'number') {
+                    self._.dt[key] = 0;
+                } else {
+                    self._.dt[key] = null;
+                }
+            }
+        }
+    }
+    self._.df = {};
+};
+
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = { Model: Model };
 } else {

@@ -8,15 +8,13 @@
 * @constructor
 */
 var Model = function (data) {
-    // Check if data already a model an unwrap it
-    var dt = (typeof data._toObject === 'function') ? data._toObject() : data;
     // Add property to hold internal values
     Object.defineProperty(this, '_', {
         enumerable: false,
         configurable: false,
         writable: false,
         value: {
-            dt: dt,
+            dt: this._clone(data),
             ev: {},
             df: {},
             sp: false,
@@ -48,22 +46,7 @@ Model.prototype._isObject = function (obj) {
 * @return {array/object} clone of original array or object
 */
 Model.prototype._clone = function (value) {
-    var self = this,
-    result;
-    if (Array.isArray(value)) {
-        result = [];
-        for (var i = 0, len = value.length; i < len; i++) {
-            result.push(value[i]);
-        }
-    } else if (self._isObject(value)) {
-        result = {};
-        for (var key in value) {
-            if (value.hasOwnProperty(key)) {
-                result[key] = value[key];
-            }
-        }
-    }
-    return result;
+    return JSON.parse(JSON.stringify(value));
 };
 
 /**
@@ -440,6 +423,35 @@ Model.prototype._addProperty = function _addProperty (key) {
 Model.prototype._add = function _add (key, value) {
     this._.dt[key] = value;
     this._addProperty(key);
+};
+
+/**
+* Clears all properties and set them null or empty array
+*
+* @method _clear
+* @return {undefined}
+*/
+Model.prototype._clear = function _clear (values) {
+    values = values || {};
+    var self = this;
+    for (var key in self._.dt) {
+        if (self._.dt.hasOwnProperty(key)) {
+            if (values.hasOwnProperty(key)) {
+                self._.dt[key] = values[key];
+            } else {
+                if (Array.isArray(self._.dt[key])) {
+                    self._.dt[key] = [];
+                } else if (typeof self._.dt[key] === 'boolean') {
+                    self._.dt[key] = false;
+                } else if (typeof self._.dt[key] === 'number') {
+                    self._.dt[key] = 0;
+                } else {
+                    self._.dt[key] = null;
+                }
+            }
+        }
+    }
+    self._.df = {};
 };
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
