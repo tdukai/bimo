@@ -437,16 +437,16 @@ Model.prototype._clear = function _clear (values) {
     for (var key in self._.dt) {
         if (self._.dt.hasOwnProperty(key)) {
             if (values.hasOwnProperty(key)) {
-                self._.dt[key] = values[key];
+                self[key] = values[key];
             } else {
                 if (Array.isArray(self._.dt[key])) {
-                    self._.dt[key] = [];
+                    self[key] = [];
                 } else if (typeof self._.dt[key] === 'boolean') {
-                    self._.dt[key] = false;
+                    self[key] = false;
                 } else if (typeof self._.dt[key] === 'number') {
-                    self._.dt[key] = 0;
+                    self[key] = 0;
                 } else {
-                    self._.dt[key] = null;
+                    self[key] = null;
                 }
             }
         }
