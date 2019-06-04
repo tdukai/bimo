@@ -1,6 +1,6 @@
 {
   "name": "bimo",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "Binding and Model - Non-intrusive binding between model and HTML controls and non-opinionated observable model with multiple watch strategies.",
   "main": "index.js",
   "author": "Tamara Dukai <tamara@dukai.net> (https://ca.linkedin.com/in/tamaradukai)",
