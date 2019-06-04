@@ -18,14 +18,14 @@ gulp.task('lint', function () {
 });
 
 // Testing
-gulp.task('test', ['lint'], function () {
+gulp.task('test', gulp.series('lint', function () {
     return gulp.src(jsTest)
         .pipe(plugins.expectFile(jsTest))
         .pipe(plugins.mocha({reporter: 'nyan'}));
-});
+}));
 
 // Bundling
-gulp.task('bundle', function() {
+gulp.task('bundle', function () {
     // Copy License to dist folder
     gulp.src('LICENSE')
         .pipe(gulp.dest('dist'));
@@ -35,7 +35,7 @@ gulp.task('bundle', function() {
         .pipe(gulp.dest('dist'));
     // Create individual files compressed 
     gulp.src(bundle)
-        .pipe(plugins.uglify().on('error', plugins.util.log))
+        .pipe(plugins.uglify().on('error', console.error))
         .pipe(plugins.rename({ extname: '.min.js' }))
         .pipe(gulp.dest('dist'));
     // Create individual files gzip compressed
@@ -61,4 +61,4 @@ gulp.task('bundle', function() {
         .pipe(gulp.dest('dist'));
 });
 
-gulp.task('default', ['lint', 'bundle']);
+gulp.task('default', gulp.parallel('lint', 'bundle'));

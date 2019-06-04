@@ -20,22 +20,21 @@
   "dependencies": {},
   "devDependencies": {
     "chai": "^4.2.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-copy": "4.0.1",
     "gulp-exit": "0.0.2",
-    "gulp-expect-file": "1.0.0",
+    "gulp-expect-file": "1.0.1",
     "gulp-gzip": "^1.4.2",
     "gulp-jshint": "^2.1.0",
-    "gulp-load-plugins": "^1.5.0",
-    "gulp-markdown": "^3.0.0",
+    "gulp-load-plugins": "^1.6.0",
+    "gulp-markdown": "^4.0.0",
     "gulp-mocha": "^6.0.0",
     "gulp-rename": "^1.4.0",
-    "gulp-uglify": "^3.0.1",
-    "gulp-util": "^3.0.8",
+    "gulp-uglify": "^3.0.2",
     "gulp-yuidoc": "^0.1.2",
-    "jshint": "^2.9.6",
+    "jshint": "^2.10.2",
     "jshint-stylish": "^2.2.1",
-    "mocha": "^5.2.0"
+    "mocha": "^6.1.4"
   }
 }

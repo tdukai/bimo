@@ -434,16 +434,16 @@ Model.prototype._add = function _add (key, value) {
 Model.prototype._clear = function _clear (values) {
     values = values || {};
     var self = this;
-    for (var key in self._.dt) {
-        if (self._.dt.hasOwnProperty(key)) {
+    for (var key in self) {
+        if (self.hasOwnProperty(key)) {
             if (values.hasOwnProperty(key)) {
                 self[key] = values[key];
             } else {
-                if (Array.isArray(self._.dt[key])) {
+                if (Array.isArray(self[key])) {
                     self[key] = [];
-                } else if (typeof self._.dt[key] === 'boolean') {
+                } else if (typeof self[key] === 'boolean') {
                     self[key] = false;
-                } else if (typeof self._.dt[key] === 'number') {
+                } else if (typeof self[key] === 'number') {
                     self[key] = 0;
                 } else {
                     self[key] = null;
