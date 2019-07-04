@@ -129,6 +129,8 @@ window.bimo.Bind = function (options) {
                     result = control.checked;
                 } else if (type === 'file') {
                     result = control.files;
+                } else if (type === 'number') {
+                    result = Number(control[self.property]);
                 } else {
                     result = control[self.property];
                 }
