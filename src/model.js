@@ -1,4 +1,3 @@
-/*global window */
 "use strict";
 
 /**
@@ -445,8 +444,8 @@ Model.prototype._clear = function _clear (values) {
                     self[key] = false;
                 } else if (typeof self[key] === 'number') {
                     self[key] = 0;
-                } else {
-                    self[key] = null;
+                } else if (typeof self[key] === 'string') {
+                    self[key] = '';
                 }
             }
         }

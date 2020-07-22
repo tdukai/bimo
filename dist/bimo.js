@@ -1,4 +1,3 @@
-/*global window */
 "use strict";
 
 /**
@@ -445,8 +444,8 @@ Model.prototype._clear = function _clear (values) {
                     self[key] = false;
                 } else if (typeof self[key] === 'number') {
                     self[key] = 0;
-                } else {
-                    self[key] = null;
+                } else if (typeof self[key] === 'string') {
+                    self[key] = '';
                 }
             }
         }
@@ -460,7 +459,6 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     window.bimo = window.bimo || {};
     window.bimo.Model = Model;
 }
-/*global window, document */
 "use strict";
 
 window.bimo = window.bimo || {};
@@ -481,7 +479,6 @@ window.bimo.Bind = function (options) {
     removeEvent,
     customEvent,
     isEmpty,
-    isObject,
     getValue,
     setValue,
     controlChanged,
@@ -576,11 +573,6 @@ window.bimo.Bind = function (options) {
         return (obj === undefined || obj === null);
     };
 
-    /* Checks if something a real object */
-    isObject = function (obj) {
-        return (Object.prototype.toString.call(obj) === '[object Object]');
-    };
-
     /* Gets the value from the HTML control */
     getValue = function (control) {
         var result;
@@ -591,6 +583,14 @@ window.bimo.Bind = function (options) {
                     result = control.checked;
                 } else if (type === 'file') {
                     result = control.files;
+                } else if (type === 'number') {
+                    result = Number(control[self.property]);
+                } else if (type === 'date') {
+                    result = new Date(control.value);
+                } else if (type === 'time') {
+                    result = control.value; 
+                } else if (type === 'datetime-local') {
+                    result = new Date(control.value);
                 } else {
                     result = control[self.property];
                 }
@@ -610,28 +610,66 @@ window.bimo.Bind = function (options) {
         // Apply formatting if exists
         if (typeof self.read === 'function') {
             self.read.call(self, value);
-        } else if (!isEmpty(self.elements) && !isEmpty(value)) {
+        } else if (!isEmpty(self.elements)) {
             // Assign value
             for (var i = 0, len = self.elements.length; i < len; i++) {
+                // Check by type
                 if (['SELECT', 'INPUT', 'TEXTAREA'].indexOf(self.elements[i].nodeName) !== -1) {
                     var type = self.elements[i].type.toLowerCase();
-                    if (type === 'checkbox') {
-                        if (self.elements[i].checked !== value) {
-                            self.elements[i].checked = value;
+                    // Check for empty
+                    if (isEmpty(value)) {
+                        if (type === 'checkbox') {
+                            self.elements[i].checked = false;
+                        } else if (type === 'file') {
+                            // No input value from model here
+                        } else {
+                            if (self.elements[i][self.property] !== '') {
+                                self.elements[i][self.property] = '';
+                            }
                         }
-                    } else if (type === 'file') {
-                        // No input value from model here
                     } else {
-                        if (self.elements[i][self.property] !== value) {
-                            self.elements[i][self.property] = value;
+                        if (type === 'checkbox') {
+                            if (self.elements[i].checked !== value) {
+                                self.elements[i].checked = value;
+                            }
+                        } else if (type === 'file') {
+                            // No input value from model here
+                        } else if (type === 'date') {
+                            if (typeof value === 'string') {
+                                self.elements[i].value = value;
+                            } else if (value && typeof value.toISOString === 'function') {
+                                self.elements[i].value = value.toISOString().substr(0, 10);
+                            }
+                        } else if (type === 'time') {
+                            if (typeof value === 'string') {
+                                self.elements[i].value = value;
+                            } else if (value && typeof value.toISOString === 'function') {
+                                self.elements[i].value = value.toISOString().substr(11, 5);
+                            }
+                        } else if (type === 'datetime-local') {
+                            if (typeof value === 'string') {
+                                self.elements[i].value = value;
+                            } else if (value && typeof value.toISOString === 'function') {
+                                self.elements[i].value = value.toISOString();
+                            }
+                        } else {
+                            if (self.elements[i][self.property] !== value) {
+                                self.elements[i][self.property] = value;
+                            }
                         }
                     }
                 } else {
-                    if (self.elements[i].innerHTML !== value) {
-                        self.elements[i].innerHTML = value;
+                    if (isEmpty(value)) {
+                        if (self.elements[i].innerHTML !== '') {
+                            self.elements[i].innerHTML = '';
+                        }
+                    } else {
+                        if (self.elements[i].innerHTML !== value) {
+                            self.elements[i].innerHTML = value;
+                        }
                     }
                 }
-            }
+            }                
         }
     };
 

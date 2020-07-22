@@ -1,4 +1,4 @@
-/*global document, bimo */
+/*global bimo */
 "use strict";
 
 // Lookup
@@ -159,15 +159,7 @@ var binder = new bimo.Binder({
                 return result;
             }
         },
-        birthday: {
-            selector: '.js-birthday',
-            read: function (value) {
-                return (value === undefined || value === null) ? '2015-12-03' : value;
-            },
-            write: function (value) {
-                return new Date(value);
-            }
-        },
+        birthday: '.js-birthday',
         age: {
             selector: '.js-age',
             events: { // Any valid event can be wired up if specified in the "events" sub object
@@ -260,6 +252,7 @@ var buttons = {
     bind: document.getElementById('bindBtn'),
     unbind: document.getElementById('unbindBtn'),
     revert: document.getElementById('revertBtn'),
+    clear: document.getElementById('clearBtn'),
     suspend: document.getElementById('suspendBtn'),
     resume: document.getElementById('resumeBtn')
 };
@@ -283,6 +276,11 @@ buttons.unbind.addEventListener('click', function () {
 buttons.revert.addEventListener('click', function () {
     model._revert();
     model.address._revert();
+});
+
+buttons.clear.addEventListener('click', function () {
+    model._clear();
+    model.address._clear();
 });
 
 buttons.suspend.addEventListener('click', function () {

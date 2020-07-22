@@ -2,19 +2,23 @@
 
 var gulp = require('gulp');
 var plugins = require('gulp-load-plugins')({"camelize": true});
-var jsLint = ['*.js', '*.json', '.jshintrc', 'src/*.js', 'test/*.js'];
+var jsLint = ['*.js', 'src/*.js'];
 var jsTest = ['test/*.js'];
 var bundle = [
     'src/model.js',
     'src/binder.js'
 ];
+var terserOptions = { 
+    keep_classnames: true, 
+    keep_fnames: true 
+};
 
 // Lint source
 gulp.task('lint', function () {
     return gulp.src(jsLint)
         .pipe(plugins.expectFile(jsLint))
-        .pipe(plugins.jshint('.jshintrc'))
-        .pipe(plugins.jshint.reporter('jshint-stylish'));
+        .pipe(plugins.eslint('.eslintrc'))
+        .pipe(plugins.eslint.format());
 });
 
 // Testing
@@ -35,12 +39,12 @@ gulp.task('bundle', function () {
         .pipe(gulp.dest('dist'));
     // Create individual files compressed 
     gulp.src(bundle)
-        .pipe(plugins.uglify().on('error', console.error))
+        .pipe(plugins.terser(terserOptions).on('error', console.error))
         .pipe(plugins.rename({ extname: '.min.js' }))
         .pipe(gulp.dest('dist'));
     // Create individual files gzip compressed
     gulp.src(bundle)
-        .pipe(plugins.uglify())
+    .pipe(plugins.terser(terserOptions).on('error', console.error))
         .pipe(plugins.gzip({
             append: true,
             gzipOptions: {
@@ -50,7 +54,7 @@ gulp.task('bundle', function () {
         .pipe(gulp.dest('dist'));
     return gulp.src(bundle)
         .pipe(plugins.concat('bimo.min.js'))
-        .pipe(plugins.uglify())
+        .pipe(plugins.terser(terserOptions).on('error', console.error))
         .pipe(gulp.dest('dist'))
         .pipe(plugins.gzip({
             append: true,
