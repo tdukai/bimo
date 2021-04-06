@@ -19,20 +19,14 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "chai": "^4.2.0",
+    "chai": "^4.3.4",
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
-    "gulp-copy": "4.0.1",
     "gulp-eslint": "^6.0.0",
-    "gulp-exit": "0.0.2",
     "gulp-expect-file": "^1.0.2",
     "gulp-gzip": "^1.4.2",
-    "gulp-load-plugins": "^2.0.3",
-    "gulp-mocha": "^7.0.2",
+    "gulp-load-plugins": "^2.0.6",
     "gulp-rename": "^2.0.0",
-    "gulp-replace": "^1.0.0",
-    "gulp-terser": "^1.2.0",
-    "gulp4-run-sequence": "^1.0.1",
-    "mocha": "^8.0.1"
+    "gulp-terser": "^2.0.1"
   }
 }
