@@ -240,7 +240,7 @@ async-settle@^1.0.0:
   dependencies:
     async-done "^1.2.2"
 
-async@^3.1.0:
+async@^3.2.0:
   version "3.2.0"
   resolved "https://registry.unicomp.hu/async/-/async-3.2.0.tgz#b3a2685c5ebb641d3de02d161002c60fc9f85720"
   integrity sha512-TR2mEZFVOj2pLStYxLht7TyfuRzaydfpxr3k9RpHIzMgw7A64dzsdqCxH1WJyQdoe8T10nDXd9wnEigmiuHIZw==
@@ -1315,19 +1315,18 @@ gulp-eslint@^6.0.0:
     fancy-log "^1.3.2"
     plugin-error "^1.0.1"
 
-gulp-expect-file@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.unicomp.hu/gulp-expect-file/-/gulp-expect-file-1.0.2.tgz#2d7316f7047208f2c00725a40811e7e6fe1cd16d"
-  integrity sha512-Fbin3JkyX26npkoNcHsltjsvGf9wmdqKqZ00aEra/6L30huLxvisMKyobAPuDOv47TmxA5G4xMiTn2l/E98byA==
+gulp-expect-file@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.unicomp.hu/gulp-expect-file/-/gulp-expect-file-2.0.0.tgz#4715365d9e2ca12d40d06dda0b227251e3e055f2"
+  integrity sha512-VLBvmSoF85dQ71tQngx1GfAcJ0s9g50dcjrlX4eyZbF9sAEoGU8F04JtXXU6rBcGDAHXUs4+n1HUs0lgHKyW1Q==
   dependencies:
     ansi-colors "^4.1.1"
-    async "^3.1.0"
+    async "^3.2.0"
     fancy-log "^1.3.3"
     minimatch "^3.0.4"
     plugin-error "^1.0.1"
-    through2 "^3.0.1"
-    vinyl "^2.2.0"
-    xtend "^4.0.2"
+    through2 "^4.0.2"
+    vinyl "^2.2.1"
 
 gulp-gzip@^1.4.2:
   version "1.4.2"
@@ -1341,10 +1340,10 @@ gulp-gzip@^1.4.2:
     stream-to-array "^2.3.0"
     through2 "^2.0.3"
 
-gulp-load-plugins@^2.0.6:
-  version "2.0.6"
-  resolved "https://registry.unicomp.hu/gulp-load-plugins/-/gulp-load-plugins-2.0.6.tgz#e4d34b614de93775ad2ed80fd145dcf1eaba0482"
-  integrity sha512-HP5jUhPzvib37kWYLFvhDQJpBar2pXG7diFOFI4/PgCrQWobV5/MfnU0dMx0d5NfyJGcRrpUI1E0MROlLvNO4A==
+gulp-load-plugins@^2.0.7:
+  version "2.0.7"
+  resolved "https://registry.unicomp.hu/gulp-load-plugins/-/gulp-load-plugins-2.0.7.tgz#69d35d27e8f9b41a00a29cfcdf236d5d17c40dbe"
+  integrity sha512-/3nl/p7s9O03Yv6SSEqN2dXEbDE0+JpsKfJl6h/GgCLqqnkZT0bF+JWcz87HzcTBeh/MVzMosAJx4kLDTWrTNQ==
   dependencies:
     array-unique "^0.3.2"
     fancy-log "^1.2.0"
@@ -1491,7 +1490,7 @@ inflight@^1.0.4:
     once "^1.3.0"
     wrappy "1"
 
-inherits@2, inherits@^2.0.1, inherits@^2.0.3, inherits@^2.0.4, inherits@~2.0.3:
+inherits@2, inherits@^2.0.1, inherits@^2.0.3, inherits@~2.0.3:
   version "2.0.4"
   resolved "https://registry.unicomp.hu/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
   integrity sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==
@@ -2335,7 +2334,7 @@ read-pkg@^1.0.0:
     normalize-package-data "^2.3.2"
     path-type "^1.0.0"
 
-"readable-stream@2 || 3", readable-stream@3:
+readable-stream@3:
   version "3.6.0"
   resolved "https://registry.unicomp.hu/readable-stream/-/readable-stream-3.6.0.tgz#337bbda3adc0706bd3e024426a286d4b4b2c9198"
   integrity sha512-BViHy7LKeTz4oNnkcLJ+lVSL6vpiFeX6/d3oSH8zCW7UxP2onchk+vTGB143xuFjHS3deTgkKoXXymXqymiIdA==
@@ -2865,14 +2864,6 @@ through2@^2.0.0, through2@^2.0.3, through2@~2.0.0:
     readable-stream "~2.3.6"
     xtend "~4.0.1"
 
-through2@^3.0.1:
-  version "3.0.2"
-  resolved "https://registry.unicomp.hu/through2/-/through2-3.0.2.tgz#99f88931cfc761ec7678b41d5d7336b5b6a07bf4"
-  integrity sha512-enaDQ4MUyP2W6ZyT6EsMzqBPZaM/avg8iuo+l2d3QCs0J+6RaqkHV/2/lOwDTueBHeJ/2LG9lrLW3d5rWPucuQ==
-  dependencies:
-    inherits "^2.0.4"
-    readable-stream "2 || 3"
-
 through2@^4.0.2:
   version "4.0.2"
   resolved "https://registry.unicomp.hu/through2/-/through2-4.0.2.tgz#a7ce3ac2a7a8b0b966c80e7c49f0484c3b239764"
@@ -3133,7 +3124,7 @@ vinyl-sourcemaps-apply@^0.2.1:
   dependencies:
     source-map "^0.5.1"
 
-vinyl@^2.0.0, vinyl@^2.2.0:
+vinyl@^2.0.0, vinyl@^2.2.1:
   version "2.2.1"
   resolved "https://registry.unicomp.hu/vinyl/-/vinyl-2.2.1.tgz#23cfb8bbab5ece3803aa2c0a1eb28af7cbba1974"
   integrity sha512-LII3bXRFBZLlezoG5FfZVcXflZgWP/4dCwKtxd5ky9+LOtM4CS3bIRQsmR1KMnMW07jpE8fqR2lcxPZ+8sJIcw==
@@ -3182,7 +3173,7 @@ write@1.0.3:
   dependencies:
     mkdirp "^0.5.1"
 
-xtend@^4.0.2, xtend@~4.0.0, xtend@~4.0.1:
+xtend@~4.0.0, xtend@~4.0.1:
   version "4.0.2"
   resolved "https://registry.unicomp.hu/xtend/-/xtend-4.0.2.tgz#bb72779f5fa465186b1f438f674fa347fdb5db54"
   integrity sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==
