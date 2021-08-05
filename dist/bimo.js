@@ -586,11 +586,11 @@ window.bimo.Bind = function (options) {
                 } else if (type === 'number') {
                     result = Number(control[self.property]);
                 } else if (type === 'date') {
-                    result = new Date(control.value);
+                    result = control.valueAsDate;
                 } else if (type === 'time') {
                     result = control.value; 
                 } else if (type === 'datetime-local') {
-                    result = new Date(control.value);
+                    result = control.valueAsDate;
                 } else {
                     result = control[self.property];
                 }
@@ -650,7 +650,7 @@ window.bimo.Bind = function (options) {
                             if (typeof value === 'string') {
                                 self.elements[i].value = value;
                             } else if (value && typeof value.toISOString === 'function') {
-                                self.elements[i].value = value.toISOString();
+                                self.elements[i].value = value.toISOString().substr(0, 16);
                             }
                         } else {
                             if (self.elements[i][self.property] !== value) {
