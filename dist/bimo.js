@@ -636,19 +636,19 @@ window.bimo.Bind = function (options) {
                             // No input value from model here
                         } else if (type === 'date') {
                             if (typeof value === 'string') {
-                                self.elements[i].value = value;
+                                self.elements[i].value = value.substr(0, 10);
                             } else if (value && typeof value.toISOString === 'function') {
                                 self.elements[i].value = value.toISOString().substr(0, 10);
                             }
                         } else if (type === 'time') {
                             if (typeof value === 'string') {
-                                self.elements[i].value = value;
+                                self.elements[i].value = value.substr(11, 5);
                             } else if (value && typeof value.toISOString === 'function') {
                                 self.elements[i].value = value.toISOString().substr(11, 5);
                             }
                         } else if (type === 'datetime-local') {
                             if (typeof value === 'string') {
-                                self.elements[i].value = value;
+                                self.elements[i].value = value.substr(0, 16);
                             } else if (value && typeof value.toISOString === 'function') {
                                 self.elements[i].value = value.toISOString().substr(0, 16);
                             }
