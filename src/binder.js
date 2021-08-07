@@ -145,7 +145,7 @@ window.bimo.Bind = function (options) {
     };
 
     /* Sets the value for HTML control */
-    setValue = function (value) {
+    setValue = function (value, refresh = false) {
         // Apply formatting if exists
         if (typeof self.read === 'function') {
             self.read.call(self, value);
@@ -168,7 +168,7 @@ window.bimo.Bind = function (options) {
                         }
                     } else {
                         if (type === 'checkbox') {
-                            if (self.elements[i].checked !== value) {
+                            if (self.elements[i].checked !== value || refresh === true) {
                                 self.elements[i].checked = value;
                             }
                         } else if (type === 'file') {
@@ -192,7 +192,7 @@ window.bimo.Bind = function (options) {
                                 self.elements[i].value = value.toISOString().substr(0, 16);
                             }
                         } else {
-                            if (self.elements[i][self.property] !== value) {
+                            if (self.elements[i][self.property] !== value || refresh === true) {
                                 self.elements[i][self.property] = value;
                             }
                         }
@@ -203,7 +203,7 @@ window.bimo.Bind = function (options) {
                             self.elements[i].innerHTML = '';
                         }
                     } else {
-                        if (self.elements[i].innerHTML !== value) {
+                        if (self.elements[i].innerHTML !== value || refresh === true) {
                             self.elements[i].innerHTML = value;
                         }
                     }
@@ -226,7 +226,7 @@ window.bimo.Bind = function (options) {
     modelChanged = function (data) {
         for (var key in data) {
             if (data.hasOwnProperty(key) && self.key === key) {
-                setValue(self.model[key]);
+                setValue(self.model[key], data.refresh);
             }
         }
     };

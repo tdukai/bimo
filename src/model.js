@@ -412,6 +412,30 @@ Model.prototype._addProperty = function _addProperty (key) {
 };
 
 /**
+* Calls change event associated with field name to refresh control
+*
+* @method _refresh
+* @param {string} key
+* @return {undefined}
+*/
+Model.prototype._refresh = function _refresh (key) {
+    var self = this, arg = {};
+    arg[key] = {
+        refresh: true
+    };
+    for (var k in self._.df[key]) {
+        if (self._.df[key].hasOwnProperty(k)) {
+            arg[key][k] = self._.df[key][k];
+        }
+    }
+    for (var i = 0, len = self._.ev[key].length; i < len; i++) {
+        if (typeof self._.ev[key][i] === 'function') {
+            self._.ev[key][i].call(self._.ev[key][i], arg);
+        }
+    }
+};
+
+/**
 * Adds new property to object (only non object properties)
 *
 * @method _add

@@ -114,9 +114,10 @@ function displayModel () {
 // Watch event
 function doWatch (obj) {
     // Loop object and display to console
+    var out = [];
     for (var key in obj) {
         if (obj.hasOwnProperty(key)) {
-            console.log([key, ' => actual: ', obj[key].actual, ', previous: ', obj[key].previous, ' original: ', obj[key].original].join(''));
+            console.log([key, ' => actual: ', obj[key].actual, ', previous: ', obj[key].previous, ' original: ', obj[key].original, ' refresh: ', obj[key].refresh === undefined ? false : obj[key].refresh].join(''));
         }
     }
     // Update JSON
@@ -163,7 +164,7 @@ var binder = new bimo.Binder({
         age: {
             selector: '.js-age',
             events: { // Any valid event can be wired up if specified in the "events" sub object
-                focus: function () { 
+                focus: function () {
                     console.log('Age here');
                 }
             }
@@ -241,6 +242,10 @@ var binderAddress = new bimo.Binder({
             events: { // Any valid event can be wired up if specified in the "events" sub object
                 blur: function () {
                     console.log('Leaving city');
+                },
+                read: function (value) {
+                    console.log('Refreshed city');
+                    return value;
                 }
             }
         }
@@ -253,6 +258,7 @@ var buttons = {
     unbind: document.getElementById('unbindBtn'),
     revert: document.getElementById('revertBtn'),
     clear: document.getElementById('clearBtn'),
+    refresh: document.getElementById('refreshBtn'),
     suspend: document.getElementById('suspendBtn'),
     resume: document.getElementById('resumeBtn')
 };
@@ -281,6 +287,10 @@ buttons.revert.addEventListener('click', function () {
 buttons.clear.addEventListener('click', function () {
     model._clear();
     model.address._clear();
+});
+
+buttons.refresh.addEventListener('click', function () {
+    model._refresh('age');
 });
 
 buttons.suspend.addEventListener('click', function () {
