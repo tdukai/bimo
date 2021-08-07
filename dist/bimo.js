@@ -418,19 +418,33 @@ Model.prototype._addProperty = function _addProperty (key) {
 * @param {string} key
 * @return {undefined}
 */
-Model.prototype._refresh = function _refresh (key) {
-    var self = this, arg = {};
-    arg[key] = {
-        refresh: true
-    };
-    for (var k in self._.df[key]) {
-        if (self._.df[key].hasOwnProperty(k)) {
-            arg[key][k] = self._.df[key][k];
+Model.prototype._refresh = function _refresh (name) {
+    var self = this, 
+    arg = {},
+    refresh = function (key) {
+        arg[key] = {
+            refresh: true
+        };
+        for (var k in self._.df[key]) {
+            if (self._.df[key].hasOwnProperty(k)) {
+                arg[key][k] = self._.df[key][k];
+            }
         }
-    }
-    for (var i = 0, len = self._.ev[key].length; i < len; i++) {
-        if (typeof self._.ev[key][i] === 'function') {
-            self._.ev[key][i].call(self._.ev[key][i], arg);
+        for (var i = 0, len = self._.ev[key].length; i < len; i++) {
+            if (typeof self._.ev[key][i] === 'function') {
+                self._.ev[key][i].call(self._.ev[key][i], arg);
+            }
+        }
+    };
+    // Check the type
+    if (typeof name === 'string') {
+        var list = name.split(' ');
+        for (var j = 0, len1 = list.length; j < len1; j++) {
+            refresh(list[j]);
+        }
+    } else if (Array.isArray(name)) {
+        for (var l = 0, len2 = name.length; l < len2; l++) {
+            refresh(name[l]);
         }
     }
 };
