@@ -401,9 +401,9 @@ class Model {
         // Remove event
         const remove = (key) => {
             if (typeof event === 'function' && Array.isArray(this._.events[key])) {
-                var pos = this._.events[key].indexOf(event);
+                var pos = this._.events[key].findIndex(x => x.toString() === event.toString());
                 if (pos > -1) {
-                    this._.events[key] = this._.events[key].splice(pos, 1);
+                    this._.events[key].splice(pos, 1);
                 }
             } else {
                 this._.events[key] = null;
@@ -532,6 +532,14 @@ class Bind {
 	    this.property = this.property || options.defaults.property;
 	    this.elements = options.config.elements || null;
 	    this.selector = options.config.selector || null;
+
+        // handlers
+        this.controlHandler = (e) => { 
+           this.controlChanged(e); 
+        };
+        this.modelHandler = (data) => { 
+            this.modelChanged(data); 
+        };
 	    
 	    // Load configuration keys
 	    const configKeys = Object.keys(options.config);
@@ -812,15 +820,12 @@ class Bind {
 
     /* Event handler for HTML control changed  */
     controlChanged (e) {
-    	const changed = (element) => {
-	        if (this.twoWay === true) {
-	            const value = this.getValue(element);
-	            if (value !== undefined) {
-	                this.model[this.key] = value;
-	            }
-	        }
-	    };
-	    changed(e.target);
+        if (this.twoWay === true) {
+            const value = this.getValue(e.target);
+            if (value !== undefined) {
+                this.model[this.key] = value;
+            }
+        }
     }
 
     /* Event handler for the model value */
@@ -834,71 +839,67 @@ class Bind {
     }
 
     /**
-    * Applies the bind between the control and the value
+    * Handles binding and unbinding
     * 
-    * @method bind
+    * @method apply
     */
-    bind (callback) {
-        // Assign initial value from model and prepare options etc
-        if (!this.isEmpty(this.elements)) {
-            for (const element of this.elements) {
-                if (element.nodeName === 'SELECT') {
-                    this.addOptions(element, this.model[this.key]);
-                }
-            }
-            this.setValue(this.model[this.key]);
-        }
+    apply (bind, callback) {
 
-        // Bind to model watch event
-        this.model._watch(this.key, this.modelChanged);
-        // Bind to control when not read only (both direction)
-        if (this.twoWay === true && !this.isEmpty(this.elements)) {
-            for (const element of this.elements) {
-                this.addEvent(element, this.event, this.controlChanged);
-            }
-        }
-        // Wire up all other custom events
-        const keys = Object.keys(this.events);
-        for (const key of keys) {
-            if (typeof this.events[key] === 'function') {
-                const handler = this.customEvent(key, this.events[key]);
-                for (const element of this.elements) {
-                    this.addEvent(element, key, handler);
-                }
-            }
-        }
+       	if (bind === true) {
+	        // Assign initial value from model and prepare options etc
+	        if (!this.isEmpty(this.elements)) {
+	            for (const element of this.elements) {
+	                if (element.nodeName === 'SELECT') {
+	                    this.addOptions(element, this.model[this.key]);
+	                }
+	            }
+	            this.setValue(this.model[this.key]);
+	        }
 
-        // Call the callback method if supplied
-        if (typeof callback === 'function') {
-            callback.call(this);
-        }
-    }
+	        // Bind to model watch event
+	        this.model._watch(this.key, this.modelHandler);
+	        // Bind to control when not read only (both direction)
+	        if (this.twoWay === true && !this.isEmpty(this.elements)) {
+	            for (const element of this.elements) {
+	                this.addEvent(element, this.event, this.controlHandler);
+	            }
+	        }
+	        // Wire up all other custom events
+	        const keys = Object.keys(this.events);
+	        for (const key of keys) {
+	            if (typeof this.events[key] === 'function') {
+	                const handler = this.customEvent(key, this.events[key]);
+	                for (const element of this.elements) {
+	                    this.addEvent(element, key, handler);
+	                }
+	            }
+	        }
 
-    /**
-    * Removes bind between the control and value
-    * 
-    * @method unbind
-    */
-    unbind (callback) {
-        // Remove model watch event
-        this.model._unwatch(this.key, this.modelChanged);
-        // Default clearing of binding
-        if (this.twoWay === true) {
-            for (const element of this.elements) {
-                this.removeEvent(element, this.event, this.controlChanged);
-            }
-        }
-        // Remove all other custom events
-        const keys = Object.keys(this.handlers);
-        for (const key of keys) {
-            for (const element of this.elements) {
-                this.removeEvent(element, key, this.handlers[key]);
-            }
-        }
-        // Call the callback method if supplied
-        if (typeof callback === 'function') {
-            callback(this);
-        }
+	        // Call the callback method if supplied
+	        if (typeof callback === 'function') {
+	            callback.call(this);
+	        }
+	    } else {
+	        // Remove model watch event
+	        this.model._unwatch(this.key, this.modelHandler);
+	        // Default clearing of binding
+	        if (this.twoWay === true) {
+	            for (const element of this.elements) {
+	                this.removeEvent(element, this.event, this.controlHandler);
+	            }
+	        }
+	        // Remove all other custom events
+	        const keys = Object.keys(this.handlers);
+	        for (const key of keys) {
+	            for (const element of this.elements) {
+	                this.removeEvent(element, key, this.handlers[key]);
+	            }
+	        }
+	        // Call the callback method if supplied
+	        if (typeof callback === 'function') {
+	            callback(this);
+	        }
+	    }
     }
 }
 
@@ -993,10 +994,10 @@ class Binder {
     		try {
     			if (Array.isArray(this.binds[key])) {
     				for (const item of this.binds[key]) {
-    					item.bind();
+    					item.apply(true);
     				}
     			} else {
-    				this.binds[key].bind();
+    				this.binds[key].apply(true);
     			}
     		} catch (err) {
     			console.error(key, err);
@@ -1018,10 +1019,10 @@ class Binder {
         	try {
         		if (Array.isArray(this.binds[key])) {
         			for (const item of this.binds[key]) {
-        				item.unbind();
+        				item.apply(false);
         			}
         		} else {
-        			this.binds[key].unbind();
+        			this.binds[key].apply(false);
         		}
         	} catch (err) {
         		console.error(key, err);

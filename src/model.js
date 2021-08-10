@@ -401,9 +401,9 @@ class Model {
         // Remove event
         const remove = (key) => {
             if (typeof event === 'function' && Array.isArray(this._.events[key])) {
-                var pos = this._.events[key].indexOf(event);
+                var pos = this._.events[key].findIndex(x => x.toString() === event.toString());
                 if (pos > -1) {
-                    this._.events[key] = this._.events[key].splice(pos, 1);
+                    this._.events[key].splice(pos, 1);
                 }
             } else {
                 this._.events[key] = null;

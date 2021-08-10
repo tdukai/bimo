@@ -111,7 +111,7 @@ function doWatch (obj) {
         const props = Object.keys(obj[key]);
         const line = [];
         for (const prop of props) {
-            line.push(`${prop} => ${props[prop]}`)
+            line.push(`${prop} => ${obj[key][prop]}`)
         }
         console.log(line.join(', '));
     }
