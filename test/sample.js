@@ -68,34 +68,25 @@ var json = {
     member: false,
     gender: 'male',
     age: 34,
-    birthday: null,
+    birthday: new Date(2021-34, 11, 23),
     cars: [],
     movies: []
 };
 
-
-
-
-
-// Create model constructor
-var TestModel = function (data) {
-    // Call parent class
-    bimo.Model.call(this, data);
-    // Create another model for the sub object
-    this.address = new bimo.Model(data.address);
-};
-
-// Setup ES5 inheritance
-TestModel.prototype = Object.create(bimo.Model.prototype);
-TestModel.constructor = bimo.Model;
+class TestModel extends bimo.Model {
+    constructor (data) {
+        super(data);
+        if (data.address) {
+            this.address = new bimo.Model(data.address);
+            this.address.stateWrite = (value) => {
+                return value.toUpperCase();
+            }
+        }
+    }
+}
 
 // Create model
-var model = new TestModel(json);
-
-// Intercept method to transform 
-model.address.stateWrite = function (value) {
-    return value.toUpperCase();
-};
+const model = new TestModel(json);
 
 // Update textarea with JSON
 function displayModel () {
@@ -115,10 +106,14 @@ function displayModel () {
 function doWatch (obj) {
     // Loop object and display to console
     var out = [];
-    for (var key in obj) {
-        if (obj.hasOwnProperty(key)) {
-            console.log([key, ' => actual: ', obj[key].actual, ', previous: ', obj[key].previous, ' original: ', obj[key].original, ' refresh: ', obj[key].refresh === undefined ? false : obj[key].refresh].join(''));
+    const keys = Object.keys(obj);
+    for (const key of keys) {
+        const props = Object.keys(obj[key]);
+        const line = [];
+        for (const prop of props) {
+            line.push(`${prop} => ${props[prop]}`)
         }
+        console.log(line.join(', '));
     }
     // Update JSON
     displayModel();
@@ -127,7 +122,6 @@ function doWatch (obj) {
 // Setup watch
 model._watch(doWatch);
 model.address._watch(doWatch);
-
 
 
 // Define binder object
