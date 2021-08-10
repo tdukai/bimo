@@ -83,13 +83,8 @@ model.address.stateWrite = (value) => {
 function displayModel () {
     var obj = {
         data: model._toObject(),
-        changes: {
-            main: {},
-            address: {}
-        }
+        changes: model._delta()
     };
-    obj.changes.main = model._delta();
-    obj.changes.address = model.address._delta();
     document.querySelector('#json-out').value = JSON.stringify(obj, null, 4);
 }
 
@@ -112,8 +107,6 @@ function doWatch (obj) {
 
 // Setup watch
 model._watch(doWatch);
-model.address._watch(doWatch);
-
 
 // Define binder object
 var binder = new bimo.Binder({

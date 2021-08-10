@@ -16,11 +16,11 @@ class Model {
             configurable: false,
             writable: false,
             value: {
-                data: data,
-                events: {},
-                delta: {},
-                suspended: false,
-                count: 0
+                dt: data,
+                ev: {},
+                dl: {},
+                sp: false,
+                ct: 0
             }
         });
         // Assign keys
@@ -39,6 +39,23 @@ class Model {
     */
     _isObject (value) {
         return (Object.prototype.toString.call(value) === '[object Object]');     
+    }
+
+    /**
+    * Separate multi-key path to array or return key
+    *
+    * @method _separate
+    * @param {String} value
+    * @return {Array/String} For multi-key path returns an Array or a String
+    */
+    _separate (name) {
+        let out = name;
+        if (name.includes('.')) {
+            name = name.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+            name = name.replace(/^\./, '');           // strip a leading dot
+            out = name.split('.');
+        }
+        return out;
     }
 
     /**
@@ -119,13 +136,13 @@ class Model {
     */
     _addProperty (name) {
         // Only create property against own name and non-object element
-        if (this._.data.hasOwnProperty(name)) { 
-            if (!this._isObject(this._.data[name])) {
+        if (this._.dt.hasOwnProperty(name)) { 
+            if (!this._isObject(this._.dt[name])) {
                 Object.defineProperty(this, name, {
                     configurable: false,
                     enumerable: true,
                     get: () => {
-                        let out = this._.data[name];
+                        let out = this._.dt[name];
                         // Look for formatter method
                         if (typeof this[name + 'Read'] === 'function') {
                             out = this[name + 'Read'](out);
@@ -138,31 +155,31 @@ class Model {
                             actual = this[name + 'Write'](actual);
                         }
                         // Get previous value
-                        var previous = this._.data[name],
+                        var previous = this._.dt[name],
                         arg = {};
                         if (previous !== actual) {
                             // Update with new value
-                            this._.data[name] = actual;
+                            this._.dt[name] = actual;
                             // Update delta
-                            this._.delta[name] = this._.delta[name] || { original: previous };
-                            this._.delta[name].actual = actual;
-                            this._.delta[name].previous = previous;
+                            this._.dl[name] = this._.dl[name] || { original: previous };
+                            this._.dl[name].actual = actual;
+                            this._.dl[name].previous = previous;
                             // Count event if suspended
-                            if (this._.suspended) {
-                                this._.count++; // Count changes
-                            } else if (Array.isArray(this._.events[name])) { // Otherwise run events
+                            if (this._.sp) {
+                                this._.ct++; // Count changes
+                            } else if (Array.isArray(this._.ev[name])) { // Otherwise run events
                                 // Collect all names from diff
                                 arg[name] = {};
-                                const keys = Object.keys(this._.delta[name]);
+                                const keys = Object.keys(this._.dl[name]);
                                 for (const key of keys) {
-                                    arg[name][key] = this._.delta[name][key];
+                                    arg[name][key] = this._.dl[name][key];
                                 }
                                 // If value reverted back to original remove it
-                                if (this._isEquals(this._.delta[name].actual, this._.delta[name].original)) {
-                                    delete this._.delta[name];
+                                if (this._isEquals(this._.dl[name].actual, this._.dl[name].original)) {
+                                    delete this._.dl[name];
                                 }
                                 // Run event
-                                for (const event of this._.events[name]) {
+                                for (const event of this._.ev[name]) {
                                     if (typeof event === 'function') {
                                         event.call(event, arg);
                                     }
@@ -173,7 +190,7 @@ class Model {
                 });
             } else {
                 // Create a subcomponent for object
-                this[name] = new Model(this._.data[name]);
+                this[name] = new Model(this._.dt[name]);
             }    
         }
     }
@@ -186,10 +203,8 @@ class Model {
     */
     _model (name) {
         let out = this;
-        if (name.includes('.')) {
-            name = name.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
-            name = name.replace(/^\./, '');           // strip a leading dot
-            const parts = name.split('.');
+        const parts = this._separate(name);
+        if (Array.isArray(parts)) {
             parts.pop(); // Remove last element which is a property name
             for (const part of parts) {
                 if (part in out) {
@@ -209,7 +224,14 @@ class Model {
     * @return {object} model content in simple javascript object
     */
     _toObject () {
-        return this._clone(this._.data);
+        const out = this._clone(this._.dt);
+        const keys = Object.keys(this);
+        for (const key of keys) {
+            if (this[key] instanceof Model) {
+                out[key] = this[key]._toObject();
+            }
+        }
+        return out;
     }
 
     /**
@@ -219,8 +241,14 @@ class Model {
     * @return {undefined}
     */
     _suspend () {
-        this._.suspended = true;
-        this._.count = 0;
+        this._.sp = true;
+        this._.ct = 0;
+        const keys = Object.keys(this);
+        for (const key of keys) {
+            if (this[key] instanceof Model) {
+                this[key]._suspend();
+            }
+        }
     }
 
     /**
@@ -230,14 +258,14 @@ class Model {
     * @return {undefined}
     */
     _resume () {
-        this._.suspended = false;
-        if (this._.count > 0) {
-            this._.count = 0;
+        this._.sp = false;
+        if (this._.ct > 0) {
+            this._.ct = 0;
             const items = [];
-            const keys = Object.keys(this._.data);
+            const keys = Object.keys(this._.dt);
             // Create unique list
             for (const key of keys) {
-                for (const event of this._.events[key]) {
+                for (const event of this._.ev[key]) {
                     if (!items.includes(event)) {
                         items.push(event);
                     }
@@ -246,8 +274,16 @@ class Model {
             // Run all distinct methods and send argument the cumulated result
             for (const item of items) {
                 if (typeof item === 'function') {
-                    item.call(this, this._.delta);
+                    item.call(this, this._.dl);
                 }
+            }
+        }
+
+        // Call subcomponents
+        const keys = Object.keys(this);
+        for (const key of keys) {
+            if (this[key] instanceof Model) {
+                this[key]._resume();
             }
         }
     }
@@ -259,7 +295,7 @@ class Model {
     * @return {object} all changed keys with previous actual and original values
     */
     _delta () {
-        const out = this._clone(this._.delta);
+        const out = this._clone(this._.dl);
         const keys = Object.keys(this);
         for (const key of keys) {
             if (this[key] instanceof Model) {
@@ -276,7 +312,13 @@ class Model {
     * @return {undefined} 
     */
     _reset () {
-        this._.delta = {};
+        this._.dl = {};
+        const keys = Object.keys(this);
+        for (const key of keys) {
+            if (this[key] instanceof Model) {
+                this[key]._reset();
+            }
+        }
     }
 
     /**
@@ -289,8 +331,9 @@ class Model {
     _revert (name) {
         // Revert a single key
         const revert = (key) => {
-            if (this._.delta[key]) {
-                this[key] = this._.delta[key].original;
+            const model = this._model(key);
+            if (model._.dl[key]) {
+                model[key] = model._.dl[key].original;
             }
         };
         
@@ -304,7 +347,7 @@ class Model {
                 revert(item);
             }
         } else if (name === undefined || name === null) {
-            const keys = Object.keys(this._.data);
+            const keys = Object.keys(this._.dt);
             for (const key of keys) {
                 revert(key);
             }
@@ -320,11 +363,12 @@ class Model {
     */
     _changed (name) {
         let out = false;
-        const delta = this._delta();
+        const model = this._model(name);
+        const delta = model._delta();
         // Check change for a single key           
         const changed = (key) => {
             let res = false;
-            if (delta[key] && delta[key].original !== this[key]) {
+            if (delta[key] && delta[key].original !== model[key]) {
                 res = true;
             }
             return res;
@@ -374,6 +418,14 @@ class Model {
                 } else if (this._isObject(arguments[0])) {
                     param = arguments[0];
                 }
+                // Call all sub components
+                const keys = Object.keys(this);
+                for (const key of keys) {
+                    if (this[key] instanceof Model) {
+                        this[key]._watch(arguments[0]);
+                    }
+                }
+
             } else if (arguments.length >= 2) {
                 param = arguments[0];
                 event = arguments[1];
@@ -392,9 +444,9 @@ class Model {
             } else if (this._isObject(param)) {
                 values = param;
             } else if (typeof event === 'function') {
-                const keys = Object.keys(this._.data);
+                const keys = Object.keys(this._.dt);
                 for (const key of keys) {
-                    if (!this._isObject(this._.data[key])) {
+                    if (!this._isObject(this._.dt[key])) {
                         values[key] = event;
                     }
                 }
@@ -403,10 +455,11 @@ class Model {
             // Loop through all the names and create entry in events
             const keys = Object.keys(values);
             for (const key of keys) {
-                if (this._.events[key] && !this._.events[key].includes(event)) {
-                    this._.events[key].push(values[key]);
+                const model = this._model(key);
+                if (Array.isArray(model._.ev[key]) && model._.ev[key].findIndex(x => x.toString() === event.toString()) === -1) {
+                    model._.ev[key].push(values[key]);
                 } else {
-                    this._.events[key] = [values[key]];
+                    model._.ev[key] = [values[key]];
                 }
             }
         }
@@ -426,14 +479,15 @@ class Model {
 
         // Remove event
         const remove = (key) => {
-            if (typeof event === 'function' && Array.isArray(this._.events[key])) {
-                var pos = this._.events[key].findIndex(x => x.toString() === event.toString());
+            const model = this._model(key);
+            if (typeof event === 'function' && Array.isArray(model._.ev[key])) {
+                var pos = model._.ev[key].findIndex(x => x.toString() === event.toString());
                 if (pos > -1) {
-                    this._.events[key].splice(pos, 1);
+                    model._.ev[key].splice(pos, 1);
                 }
             } else {
-                this._.events[key] = null;
-                delete this._.events[key];
+                model._.ev[key] = null;
+                delete model._.ev[key];
             }
         };
 
@@ -465,15 +519,15 @@ class Model {
                     remove(key);
                 }
             } else {
-                const keys = Object.keys(this._.data);
+                const keys = Object.keys(this._.dt);
                 for (const key of keys) {
-                    if (!this._isObject(this._.data[key])) {
+                    if (!this._isObject(this._.dt[key])) {
                         remove(key);
                     }
                 }
             }
         } else {
-            this._.events = {}; // Remove all events
+            this._.ev = {}; // Remove all events
         }
     }
 
@@ -486,7 +540,7 @@ class Model {
     * @return {undefined}
     */
     _add (key, value = null) {
-        this._.data[key] = value;
+        this._.dt[key] = value;
         this._addProperty(key);
     }
 
@@ -499,25 +553,56 @@ class Model {
     _clear (values = {}) {
         const keys = Object.keys(this);
         for (const key of keys) {
-            if (values[key]) {
-                this[key] = values[key];
+            if (this[key] instanceof Model) {
+                this[key]._clear(values);
             } else {
-                if (Array.isArray(this[key])) {
-                    this[key] = [];
-                } else if (typeof this[key] === 'boolean') {
-                    this[key] = false;
-                } else if (typeof this[key] === 'number') {
-                    this[key] = 0;
-                } else if (typeof this[key] === 'string') {
-                    this[key] = '';
+                if (values[key]) {
+                    this[key] = values[key];
                 } else {
-                    this[key] = null;
+                    if (Array.isArray(this[key])) {
+                        this[key] = [];
+                    } else if (typeof this[key] === 'boolean') {
+                        this[key] = false;
+                    } else if (typeof this[key] === 'number') {
+                        this[key] = 0;
+                    } else if (typeof this[key] === 'string') {
+                        this[key] = '';
+                    } else {
+                        this[key] = null;
+                    }
                 }
             }
         }
     }
-}
 
+    /**
+    * Retrieves value from model via multi or simple key 
+    *
+    * @method _getValue
+    * @param {string} name
+    * @return {Any} value from model
+    */
+    _getValue (name) {
+        const model = this._model(name);
+        const parts = this._separate(name);
+        const key = (Array.isArray(parts) ? parts[parts.length - 1] : parts);
+        return model[key];
+    }
+
+    /**
+    * Retrieves value from model via multi or simple key 
+    *
+    * @method _setValue
+    * @param {string} name
+    * @return {Any} value from model
+    */
+    _setValue (name, value) {
+        const model = this._model(name);
+        const parts = this._separate(name);
+        const key = (Array.isArray(parts) ? parts[parts.length - 1] : parts);
+        model[key] = value;
+    }
+}
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = { Model: Model };
