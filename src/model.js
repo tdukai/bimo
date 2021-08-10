@@ -172,15 +172,37 @@ class Model {
                     }
                 });
             } else {
-                // Assign the object as normal properties
-                Object.defineProperty(this, name, {
-                    enumerable: true,
-                    configurable: true,
-                    writable: true,
-                    value: this._.data[name]
-                });            
+                // Create a subcomponent for object
+                this[name] = new bimo.Model(this._.data[name]);
             }    
         }
+    }
+
+    /**
+    * Returns the object, where the property belong
+    *
+    * @method _model
+    * @return {object} model object
+    */
+    _model (name) {
+
+        debugger;
+
+        let out = this;
+        if (name.includes('.')) {
+            name = name.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+            name = name.replace(/^\./, '');           // strip a leading dot
+            const parts = name.split('.');
+            parts.pop(); // Remove last element which is a property name
+            for (const part of parts) {
+                if (part in out) {
+                    out = out[part];
+                } else {
+                    return;
+                }
+            }
+        }
+        return out;
     }
 
     /**

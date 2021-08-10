@@ -73,20 +73,11 @@ var json = {
     movies: []
 };
 
-class TestModel extends bimo.Model {
-    constructor (data) {
-        super(data);
-        if (data.address) {
-            this.address = new bimo.Model(data.address);
-            this.address.stateWrite = (value) => {
-                return value.toUpperCase();
-            }
-        }
-    }
-}
-
 // Create model
-const model = new TestModel(json);
+const model = new bimo.Model(json);
+model.address.stateWrite = (value) => {
+    return value.toUpperCase();
+};
 
 // Update textarea with JSON
 function displayModel () {
