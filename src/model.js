@@ -173,7 +173,7 @@ class Model {
                 });
             } else {
                 // Create a subcomponent for object
-                this[name] = new bimo.Model(this._.data[name]);
+                this[name] = new Model(this._.data[name]);
             }    
         }
     }
@@ -185,9 +185,6 @@ class Model {
     * @return {object} model object
     */
     _model (name) {
-
-        debugger;
-
         let out = this;
         if (name.includes('.')) {
             name = name.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
@@ -262,7 +259,14 @@ class Model {
     * @return {object} all changed keys with previous actual and original values
     */
     _delta () {
-        return this._clone(this._.delta);
+        const out = this._clone(this._.delta);
+        const keys = Object.keys(this);
+        for (const key of keys) {
+            if (this[key] instanceof Model) {
+                out[key] = this[key]._delta();
+            }
+        }
+        return out;
     }
 
     /**
