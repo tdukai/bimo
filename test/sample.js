@@ -76,7 +76,7 @@ const json = {
 };
 
 // Create model
-const model = new bimo.Model(json);
+const model = new bimo.Model(json, 'address');
 // Intercept method for "state" field
 model.address.stateWrite = (value) => {
     return value.toUpperCase();

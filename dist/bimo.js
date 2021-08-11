@@ -190,7 +190,7 @@ class Model {
                     }
                 });
             } else {
-                if (subs.includes(name)) {
+                if ((typeof subs === 'string' && subs === name) || (Array.isArray(subs) && subs.includes(name))) {
                     // Create a subcomponent for object
                     this[name] = new Model(this._.dt[name], subs);
                 } else {
@@ -376,6 +376,48 @@ class Model {
             const keys = Object.keys(this._.dt);
             for (const key of keys) {
                 revert(key);
+            }
+        }
+    }
+
+    /**
+    * Calls change event associated with field name to refresh control
+    *
+    * @method _refresh
+    * @param {string} name
+    * @return {undefined}
+    */
+    _refresh (name) {
+        const arg = {};
+        const refresh = (key) => {
+            arg[key] = {
+                refresh: true
+            };
+            const model = this._model(key);
+            const prop = this._property(key);
+
+            if (model._.dl[prop]) {
+                const keys = Object.keys(model._.dl[key]);
+                for (const k of keys) {
+                    arg[prop][k] = model._.dl[prop][k];
+                }
+                // Run event
+                for (const event of this._.ev[prop]) {
+                    if (typeof event === 'function') {
+                        event.call(event, arg);
+                    }
+                }
+            }
+        };
+        // Check the type
+        if (typeof name === 'string') {
+            var list = name.split(' ');
+            for (const item of list) {
+                refresh(item);
+            }
+        } else if (Array.isArray(name)) {
+            for (const item of name) {
+                refresh(item);
             }
         }
     }
