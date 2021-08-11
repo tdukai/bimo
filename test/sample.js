@@ -2,7 +2,7 @@
 "use strict";
 
 // Lookup
-var lookups = {
+const lookups = {
     states: {
         AL: "Alabama",
         AK: "Alaska",
@@ -59,66 +59,46 @@ var lookups = {
 };
 
 // Model
-var json = {
+const json = {
     address: {
         state: 'CA',
-        city: 'San Jose'
+        city: 'San Jose',
+        min: 23,
+        max: 34
     },
     user: 'John Doe',
     member: false,
     gender: 'male',
     age: 34,
-    birthday: null,
+    birthday: new Date(2021-34, 11, 23),
     cars: [],
     movies: []
 };
 
-
-
-
-
-// Create model constructor
-var TestModel = function (data) {
-    // Call parent class
-    bimo.Model.call(this, data);
-    // Create another model for the sub object
-    this.address = new bimo.Model(data.address);
-};
-
-// Setup ES5 inheritance
-TestModel.prototype = Object.create(bimo.Model.prototype);
-TestModel.constructor = bimo.Model;
-
 // Create model
-var model = new TestModel(json);
-
-// Intercept method to transform 
-model.address.stateWrite = function (value) {
-    return value.toUpperCase();
-};
+const model = new bimo.Model(json);
 
 // Update textarea with JSON
 function displayModel () {
-    var obj = {
+    const obj = {
         data: model._toObject(),
-        changes: {
-            main: {},
-            address: {}
-        }
+        changes: model._delta()
     };
-    obj.changes.main = model._delta();
-    obj.changes.address = model.address._delta();
     document.querySelector('#json-out').value = JSON.stringify(obj, null, 4);
 }
 
 // Watch event
 function doWatch (obj) {
     // Loop object and display to console
-    var out = [];
-    for (var key in obj) {
-        if (obj.hasOwnProperty(key)) {
-            console.log([key, ' => actual: ', obj[key].actual, ', previous: ', obj[key].previous, ' original: ', obj[key].original, ' refresh: ', obj[key].refresh === undefined ? false : obj[key].refresh].join(''));
+    const out = [];
+    const keys = Object.keys(obj);
+    for (const key of keys) {
+        const props = Object.keys(obj[key]);
+        const line = [];
+        for (const prop of props) {
+            line.push(`${prop} => ${obj[key][prop]}`)
         }
+        console.log(line.join(', '));
     }
     // Update JSON
     displayModel();
@@ -126,12 +106,29 @@ function doWatch (obj) {
 
 // Setup watch
 model._watch(doWatch);
-model.address._watch(doWatch);
 
+// Helper method to convert to number
+function toNumber (args) {
+    let out = args.value;
+    if (isNaN(args.value)) {
+        out = 0;
+    } else {
+        out = Number(args.value);
+    }
+    return out;
+}
 
+// Helper method to format before reach control
+function suppressZero (args) {
+    let out = String(args.value);
+    if (out === '0') {
+        out = '';
+    }
+    return out;
+}
 
 // Define binder object
-var binder = new bimo.Binder({
+const binder = new bimo.Binder({
     container: '#page-container',
     model: model,
     config: {
@@ -142,118 +139,121 @@ var binder = new bimo.Binder({
         },
         gender: {
             selector: 'input[name="gender"]',
-            read: function (value) {
-                for (var i = 0, len = this.elements.length; i < len; i++) {
-                    var control = this.elements[i];
-                    control.checked = (value.indexOf(control.value) > -1);
+            read: (args) => {
+                for (let i = 0, len = args.elements.length; i < len; i++) {
+                    const el = args.elements[i];
+                    el.checked = (args.value === el.value);
                 }
             },
-            write: function () {
-                var result;
-                for (var i = 0, len = this.elements.length; i < len; i++) {
-                    var control = this.elements[i];
-                    if (control.checked === true) {
-                        result = control.value;
+            write: (args) => {
+                let out;
+                for (let i = 0, len = args.elements.length; i < len; i++) {
+                    const el = args.elements[i];
+                    if (el.checked === true) {
+                        out = el.value;
                         break;
                     }
                 }
-                return result;
+                return out;
             }
         },
         birthday: '.js-birthday',
         age: {
             selector: '.js-age',
             events: { // Any valid event can be wired up if specified in the "events" sub object
-                focus: function () {
+                focus: () => {
                     console.log('Age here');
                 }
             }
         },
         cars: {
             selector: '.js-cars',
-            read: function (value) {
+            read: (args) => {
                 // I know only 1 node here
-                var control = this.elements[0];
-                for (var i = 0, len = control.options.length; i < len; i++) {
-                    var option = control.options[i];
-                    if (value.indexOf(option.value) > -1) {
+                const el = args.elements[0];
+                for (let i = 0, len = el.options.length; i < len; i++) {
+                    const option = el.options[i];
+                    if (args.value.includes(option.value)) {
                         option.selected = true;
                     }
                 }
             },
-            write: function (value, control) {
-                var result = [];
-                for (var i = 0, len = control.options.length; i < len; i++) {
-                    var option = control.options[i];
+            write: (args) => {
+                const out = [];
+                for (let i = 0, len = args.target.options.length; i < len; i++) {
+                    const option = args.target.options[i];
                     if (option.selected === true) {
-                        result.push(option.value);
+                        out.push(option.value);
                     }
                 }
-                return result;
+                return out;
             }
         },
         movies: {
             selector: 'input[name="movies"]',
-            read: function (value) {
-                for (var i = 0, len = this.elements.length; i < len; i++) {
-                    var control = this.elements[i];
-                    control.checked = (value.indexOf(control.value) > -1);
+            read: (args) => {
+                for (let i = 0, len = args.elements.length; i < len; i++) {
+                    const el = args.elements[i];
+                    el.checked = args.value.includes(el.value);
                 }
             },
-            write: function () {
-                var result = [];
-                for (var i = 0, len = this.elements.length; i < len; i++) {
-                    var control = this.elements[i];
-                    if (control.checked === true) {
-                        result.push(control.value);
+            write: (args) => {
+                const out = [];
+                for (let i = 0, len = args.elements.length; i < len; i++) {
+                    const el = args.elements[i];
+                    if (el.checked === true) {
+                        out.push(el.value);
                     }
                 }
-                return result;
+                return out;
             }
-        }
-    }
-});
-
-// Bind the address part
-var binderAddress = new bimo.Binder({
-    container: '#page-container',
-    model: model.address,
-    config: {
-        state: [
+        },
+        'address.state': [
             {
                 selector: '.js-state',
                 options: lookups.states,
                 placeHolder: 'Select a state',
+                write: (args) => {
+                    return args.value.toUpperCase();
+                }
             },
             {
                 selector: '.js-state-name',
                 twoWay: false, // Disable 2 way binding this part is readonly
-                read: function (value) {
-                    for (var i = 0, len = this.elements.length; i < len; i++) {
-                        var control = this.elements[i];
-                        control.innerHTML = lookups.states[value];
-                    }
+                read: (args) => {
+                    const el = args.elements[0];
+                    el.innerHTML = lookups.states[args.value];
                 }
             }
         ],
-        city: {
+        'address.city': {
             selector: '.js-city',
             event: 'keyup',
             events: { // Any valid event can be wired up if specified in the "events" sub object
-                blur: function () {
+                blur: () => {
                     console.log('Leaving city');
                 },
-                read: function (value) {
+                read: (value) => {
                     console.log('Refreshed city');
                     return value;
                 }
             }
+        },
+        'address.min': {
+            selector: '#address-min',
+            write: toNumber,
+            format: suppressZero
+        },
+        'address.max': {
+            selector: '#address-max',
+            write: toNumber,
+            format: suppressZero
         }
     }
 });
 
 // Setup sample buttons
-var buttons = {
+const buttons = {
     bind: document.getElementById('bindBtn'),
     unbind: document.getElementById('unbindBtn'),
     revert: document.getElementById('revertBtn'),
@@ -264,45 +264,39 @@ var buttons = {
 };
 
 // Wire up the events
-buttons.bind.addEventListener('click', function () {
+buttons.bind.addEventListener('click', () => {
     binder.bind();
-    binderAddress.bind();
     displayModel();
     buttons.bind.disabled = true;
     buttons.unbind.disabled = false;
 });
 
-buttons.unbind.addEventListener('click', function () {
+buttons.unbind.addEventListener('click', () => {
     binder.unbind();
-    binderAddress.unbind();
     buttons.bind.disabled = false;
     buttons.unbind.disabled = true;
 });
 
-buttons.revert.addEventListener('click', function () {
+buttons.revert.addEventListener('click', () => {
     model._revert();
-    model.address._revert();
 });
 
-buttons.clear.addEventListener('click', function () {
+buttons.clear.addEventListener('click', () => {
     model._clear();
-    model.address._clear();
 });
 
-buttons.refresh.addEventListener('click', function () {
+buttons.refresh.addEventListener('click', () => {
     model._refresh('age');
 });
 
-buttons.suspend.addEventListener('click', function () {
+buttons.suspend.addEventListener('click', () => {
     model._suspend();
-    model.address._suspend();
     buttons.suspend.disabled = true;
     buttons.resume.disabled = false;
 });
 
-buttons.resume.addEventListener('click', function () {
+buttons.resume.addEventListener('click', () => {
     model._resume();
-    model.address._resume();
     buttons.suspend.disabled = false;
     buttons.resume.disabled = true;
 });
