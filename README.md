@@ -72,7 +72,7 @@ var data = {
 Simple use with demonstrating individual property change detection vs multiple updates and cumulative changes:
 ```javascript
 // Create model
-var model = new bimo.Model(data);
+var model = new bimo.Model(data, ['address']); // Specify which subcomponent you need to be a Model type
 
 // Attach event
 model._watch( (obj) => {
