@@ -2,7 +2,7 @@
 ## ***Bi***nder & ***Mo***del
 #### tiny but powerful micro framework
 
-For newer ES6 standard: [4.x README] (./README.md)
+For newer ES6 standard: [README 4.x](README.md)
 
 - [Binder](#binder) + [Bind](#bind)
 - [Model](#model)

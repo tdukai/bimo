@@ -2,7 +2,7 @@
 ## ***Bi***nder & ***Mo***del
 #### tiny but powerful micro framework
 
-For older ES5 standard: [3.x README] (./README_3x.md)
+For older ES5 standard: [README 3.x](README-3x.md)
 
 New in 4.x version (compared to 3.x):
 
