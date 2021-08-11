@@ -190,7 +190,7 @@ class Model {
                     }
                 });
             } else {
-                if (subs.include(name)) {
+                if (subs.includes(name)) {
                     // Create a subcomponent for object
                     this[name] = new Model(this._.dt[name], subs);
                 } else {
