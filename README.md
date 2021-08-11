@@ -20,6 +20,8 @@ New in 4.x version (compared to 3.x):
 
 7. New methods to handle multikey specification: _model(), _getValue(), _setValue()
 
+8. Selectors can be specified as "#", "." or ".js-", the binder automatically fills them with the key name: 'address.state': '#' => '#address-state'
+
    
 
 - [Binder](#binder) + [Bind](#bind)
