@@ -14,7 +14,7 @@ class Bind {
         Object.assign(this, options);
 
         // handlers
-        this.controlHandler = (e) => { 
+        this.controlHandler = (e) => {
            this.controlChanged(e); 
         };
         this.modelHandler = (data) => { 
@@ -428,7 +428,8 @@ class Binder {
             // Detect if multiple bindings specified
             if (Array.isArray(config[key]) === true) {
                 this.binds[key] = [];
-                for (const cfg of config[key]) {
+                for (const c of config[key]) {
+                    const cfg = (typeof c === 'string') ? { selector: c } : c;
                     const opt = Object.assign({}, defaults, cfg, {
                         container: this.container,
                         model: this.model._model(key),

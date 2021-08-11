@@ -543,6 +543,12 @@ class Model {
             }
         } else {
             this._.ev = {}; // Remove all events
+            const keys = Object.keys(this);
+            for (const key of keys) {
+                if (this[key] instanceof Model) {
+                    this[key]._.ev = {};
+                }
+            }
         }
     }
 
