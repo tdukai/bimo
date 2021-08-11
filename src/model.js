@@ -218,6 +218,21 @@ class Model {
     }
 
     /**
+    * Returns the last part of property (multi-key)
+    *
+    * @method _property
+    * @return {string} property name
+    */
+    _property (name) {
+        let out = name;
+        const parts = this._separate(name);
+        if (Array.isArray(parts)) {
+            out = parts[parts.length - 1];
+        }        
+        return out;
+    }
+
+    /**
     * Converts model into simple javascript object
     *
     * @method _toObject
@@ -456,7 +471,7 @@ class Model {
             const keys = Object.keys(values);
             for (const key of keys) {
                 const model = this._model(key);
-                if (Array.isArray(model._.ev[key]) && model._.ev[key].findIndex(x => x.toString() === event.toString()) === -1) {
+                if (Array.isArray(model._.ev[key])) {
                     model._.ev[key].push(values[key]);
                 } else {
                     model._.ev[key] = [values[key]];
@@ -481,9 +496,9 @@ class Model {
         const remove = (key) => {
             const model = this._model(key);
             if (typeof event === 'function' && Array.isArray(model._.ev[key])) {
-                var pos = model._.ev[key].findIndex(x => x.toString() === event.toString());
-                if (pos > -1) {
-                    model._.ev[key].splice(pos, 1);
+                model._.ev[key] = model._.ev[key].filter(x => x.toString() !== event.toString());
+                if (model._.ev[key].length === 0) {
+                    delete model._.ev[key];
                 }
             } else {
                 model._.ev[key] = null;
