@@ -24,14 +24,22 @@ class Bind {
 	    // Other custom events
         this.handlers = {};
 	    this.events = this.events || {};
-        this.elements = this.elements || null;
-        this.selector = this.selector || null;
 	    
 	    // Find elements
 	    if (this.isEmpty(this.elements)) {
 	        if (this.isEmpty(this.selector)) {
 	            this.elements = null;
 	        } else {
+                if (typeof this.selector === 'string') {
+                    const name = this.key.replaceAll('.', '-');
+                    if (this.selector === '#') {
+                        this.selector = `#${name}`;
+                    } else if (this.selector === '.') {
+                        this.selector = `.${name}`;
+                    } else if (this.selector === '.js-') {
+                        this.selector = `.js-${name}`;
+                    }
+                }
 	            this.elements = (typeof this.selector === 'string') ? this.container.querySelectorAll(this.selector) : this.selector;
 	            if (this.elements === null) {
 	                throw new Error(['"', this.selector.toString(), '" element not found!']);

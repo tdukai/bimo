@@ -543,6 +543,12 @@ class Model {
             }
         } else {
             this._.ev = {}; // Remove all events
+            const keys = Object.keys(this);
+            for (const key of keys) {
+                if (this[key] instanceof Model) {
+                    this[key]._.ev = {};
+                }
+            }
         }
     }
 
@@ -641,7 +647,7 @@ class Bind {
         Object.assign(this, options);
 
         // handlers
-        this.controlHandler = (e) => { 
+        this.controlHandler = (e) => {
            this.controlChanged(e); 
         };
         this.modelHandler = (data) => { 
@@ -651,14 +657,22 @@ class Bind {
 	    // Other custom events
         this.handlers = {};
 	    this.events = this.events || {};
-        this.elements = this.elements || null;
-        this.selector = this.selector || null;
 	    
 	    // Find elements
 	    if (this.isEmpty(this.elements)) {
 	        if (this.isEmpty(this.selector)) {
 	            this.elements = null;
 	        } else {
+                if (typeof this.selector === 'string') {
+                    const name = this.key.replaceAll('.', '-');
+                    if (this.selector === '#') {
+                        this.selector = `#${name}`;
+                    } else if (this.selector === '.') {
+                        this.selector = `.${name}`;
+                    } else if (this.selector === '.js-') {
+                        this.selector = `.js-${name}`;
+                    }
+                }
 	            this.elements = (typeof this.selector === 'string') ? this.container.querySelectorAll(this.selector) : this.selector;
 	            if (this.elements === null) {
 	                throw new Error(['"', this.selector.toString(), '" element not found!']);
@@ -1055,7 +1069,8 @@ class Binder {
             // Detect if multiple bindings specified
             if (Array.isArray(config[key]) === true) {
                 this.binds[key] = [];
-                for (const cfg of config[key]) {
+                for (const c of config[key]) {
+                    const cfg = (typeof c === 'string') ? { selector: c } : c;
                     const opt = Object.assign({}, defaults, cfg, {
                         container: this.container,
                         model: this.model._model(key),
