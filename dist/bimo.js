@@ -482,10 +482,11 @@ class Model {
             const keys = Object.keys(values);
             for (const key of keys) {
                 const model = this._model(key);
-                if (Array.isArray(model._.ev[key])) {
-                    model._.ev[key].push(values[key]);
+                const name = this._property(key);
+                if (Array.isArray(model._.ev[name])) {
+                    model._.ev[name].push(values[key]);
                 } else {
-                    model._.ev[key] = [values[key]];
+                    model._.ev[name] = [values[key]];
                 }
             }
         }
