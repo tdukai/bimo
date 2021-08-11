@@ -234,7 +234,6 @@ class Bind {
         // If method specified then control update will happen there
         const args = { value: value, elements: this.elements, binding: this };
         if (typeof this.read === 'function') {
-            let el = null;
             this.read(args);
         } else if (!this.isEmpty(this.elements)) {
             if (typeof this.format === 'function') {

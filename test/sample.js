@@ -77,6 +77,10 @@ const json = {
 
 // Create model
 const model = new bimo.Model(json);
+// Intercept method for "state" field
+model.address.stateWrite = (value) => {
+    return value.toUpperCase();
+}
 
 // Update textarea with JSON
 function displayModel () {
@@ -212,10 +216,7 @@ const binder = new bimo.Binder({
             {
                 selector: '.js-state',
                 options: lookups.states,
-                placeHolder: 'Select a state',
-                write: (args) => {
-                    return args.value.toUpperCase();
-                }
+                placeHolder: 'Select a state'
             },
             {
                 selector: '.js-state-name',

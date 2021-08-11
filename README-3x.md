@@ -1,26 +1,8 @@
-#  bimo (~3.1kb)
+#  bimo (~2.5kb)
 ## ***Bi***nder & ***Mo***del
 #### tiny but powerful micro framework
 
-For older ES5 standard: [3.x README] (./README_3x.md)
-
-New in 4.x version (compared to 3.x):
-
-1. ES6 support
-
-2. Supports multilevel components. When data contains objects, it will be created as another Model. All binding must be specified with full path keys, for example: 'address.state' or 'address.city'
-
-3. BREAKING CHANGES: binding read / write functions now not be context driven, but direct arrow calls. All parameter passed down as an object.
-
-4. _clone method now a true deep clone code, not poor man JSON based cloning. It keeps Date instances proper.
-
-5. All model methods like _toObject(), _delta(), _suspend(), _resume(), _reset(), _revert(), _clear() handling properly their own Model type subcomponents.
-
-6. Watch events can be specified in the main model level, but it must use proper multikey name, for example: 'address.state'.
-
-7. New methods to handle multikey specification: _model(), _getValue(), _setValue()
-
-   
+For newer ES6 standard: [4.x README] (./README.md)
 
 - [Binder](#binder) + [Bind](#bind)
 - [Model](#model)
@@ -28,7 +10,7 @@ New in 4.x version (compared to 3.x):
 ---
 
 # Model
-Non-opiniated observable model with multiple watch strategies. It works on both client and server side. No dependencies. It uses ES6 standard properties with generated "**get**" and "**set**" methods tracking individual changes and cumulative changes for the whole model. Also provides intercept methods for each property as needed.
+Non-opiniated observable model with multiple watch strategies. It works on both client and server side. No dependencies. It uses ES5 standard properties with generated "**get**" and "**set**" methods tracking individual changes and cumulative changes for the whole model. Also provides intercept methods for each property as needed.
 
 Quick Reference:
 
@@ -42,10 +24,6 @@ Quick Reference:
 |_suspend()|Stops firing events at each change (still tracking)|
 |_resume()|Resumes firing events. If any change occured since _suspend() then it fire once all distinct event handlers with a single multiple object of changes. (same as _delta())|
 |_toObject()|Returns the pure javascript object from model. Note: model assigns original object as reference so changes will be updated directly|
-|_model(name)|Returns proper base model or submodel if name specified was a multikey: _model('address.state') => address model|
-|_property(name)|Returns property name from a multikey expression: _property('address.state') => 'state'|
-|_getValue(name)|Returns value from the base or submodel: _getValue('address.state')|
-|_setValue(name, value)|Updates model value with new value using multikey.|
 
 |Event|Description|
 |---|---|
@@ -60,12 +38,10 @@ var data = {
     lastName: 'Fett',
     gender: 'male',
     age: 35,
-    address: {
-    	street: '123 Main St',
-    	city: 'Kamino',
-    	state: 'CA',
-    	zip: '12345'
-    }
+    street: '123 Main St',
+    city: 'Kamino',
+    state: 'CA',
+    zip: '12345'
 };
 ```
 
@@ -75,8 +51,12 @@ Simple use with demonstrating individual property change detection vs multiple u
 var model = new bimo.Model(data);
 
 // Attach event
-model._watch( (obj) => {
-    console.log(JSON.stringify(obj, null, 2));
+model._watch(function (e) {
+    for (var key in e) {
+        if (e.hasOwnProperty(key)) {
+            console.log(['key ', key, ' original: ', e[key].original, ', previous: ', e[key].previous, ' actual: ', e[key].actual].join(''));
+        }
+    }
 });
 
 // Change age
@@ -90,6 +70,8 @@ model.age = 42;
         original: 35
     }
 }
+// console log: 
+key 'age', original: 35, previous: 35, actual: 42
 */
 
 // *** _changed() method test:
@@ -111,6 +93,8 @@ model.age = 28;
         original: 35
     }
 }
+// console log: 
+key: 'age', original: 35, previous: 42, actual: 28
 */
 
 // Stop firing individual events
@@ -137,36 +121,38 @@ model._resume();
         original: 'Fett'
     }
 }
-*/
+// console log:
+key: 'firstName', original: 'Boba', previous: 'Boba', actual: 'Han'
+key: 'lastName', original: 'Fett', previous: 'Fett', actual: 'Solo'
 ```
 
 Watching event(s) setup is highly flexible:
 ```javascript
 // Watching every change to the model
-model._watch( (e) => {     
+model._watch(function (e) {     
 ...
 });
 
 // Watching a single property
-model._watch('age', (e) => {
+model._watch('age', function (e) {
 ...
 });
 
 // Watching multiple properties with the same event handler
-model._watch('age address.state lastName', (e) => {
+model._watch('age state lastName', function (e) {
 ...
 });
 
 // Watch multiple properties with dedicated methods 
 // (this is the same as subscribe multiple times to as single field)
 model._watch({
-    age: (e) => {
+    age: function (e) {
         ...
     },
-    'address.state': (e) => {
+    state: function (e) {
         ...
     },
-    lastName: (e) => {
+    lastName: function (e) {
         ...
     }
 });
@@ -185,36 +171,70 @@ model._unwatch('age');
 model._unwatch('age', handlerMethod);
 
 // Removes all event handlers from multiple properties
-model._unwatch('age address.state lastName');
+model._unwatch('age state lastName');
 
 // Removes specified event handlers from multiple properties
 model._unwatch({
     age: handlerMethod1,
-    'address.state': handlerMethod2,
+    state: handlerMethod2,
     lastName: handlerMethod3
 });
 ```
 
->##### Model provides methods for each property based on naming convention to intercept read and write operations. The methods can be dynamically added or specified as prototypical methods in inherited class:
+>##### Note: The model only supports single level values for simplicity, so if the json data has multiple components it needs to be handled independently. Generally more flat the model is the better. The wrapping process leaves the object properties alone:
 
+```javascript
+// Multi-level JSON data
+var data = {
+    address: {
+        street: '123 Main St',
+        city: 'Kamino',
+        state: 'CA',
+        zip: '12345'
+    },
+    firstName: 'Boba',
+    lastName: 'Fett',
+    gender: 'male',
+    age: 35
+};
+```
+
+Create base model for level 1 and another model for level 2:
+```javascript
+var model = new bimo.Model(data);
+model.address = new bimo.Model(data.address);
+```
+
+Or it can be included in the model with inheritance:
+```javascript
+var MyModel = function (data) {
+    bimo.Model.call(this, data);
+    this.address = new bimo.Model(data.address);
+};
+
+MyModel.prototype = Object.create(bimo.Model.prototype);
+MyModel.constructor = bimo.Model;
+```
+
+The model provides methods for each property based on naming convention to intercept read and write operations. The methods can be dynamically added or specified as prototypical methods in inherited class:
 ```javascript
 var model = new bimo.Model(data);
 
 // Property name + "Read"
-model.address.stateRead = (value) => {
+model.stateRead = function (value) {
     return value.toLowerCase();
 };
 
 // Property name + "Write"
-model.address.stateWrite = (value) => {
+model.stateWrite = function (value) {
     return value.toUpperCase();
 };
 
-console.log(model.address.state); // it will display 'ma' but model contains 'MA';
+console.log(model.state); // it will display 'ma' but model contains 'MA';
 
-model.address.state = 'ca';
+model.state = 'ca';
 
-console.log(model.address.state); // it will display 'ca' but model contains 'CA'
+console.log(model.state); // it will display 'ca' but model contains 'CA'
 ```
 
 Model delta can queried and be reset or values revert to original values:
@@ -361,12 +381,10 @@ var data = {
     gender: 'male',
     citizen: true,
     age: 35,
-    address: {
-    	street: '123 Main St',
-    	city: 'Kamino',
-    	state: 'CA',
-    	zip: '12345'
-    },
+    street: '123 Main St',
+    city: 'Kamino',
+    state: 'CA',
+    zip: '12345',
     cars: [], // Favorite car types - demo multi-select input
     genres: [] // Favorite movie genres - demo 
 };
@@ -418,23 +436,19 @@ var binder = new bimo.Binder({
     container: '#sample-container', // or can be specified directly: document.getElementById('sample-container')
     model: model,
     config: {
-        // Multi key must be used to reach the subcomponent
-        'address.state': [    // Multiple configurations can be specified in an array!
+        state: [    // Multiple configurations can be specified in an array!
             {
                 selector: '.js-state',
                 options: lookups.states,    // provides list of options (key-value hash) or method
                 placeHolder: 'Select a state', // Only for select options!
-                format: (args) => {				// Format function called before handing over value to the html control
-                    return args.value.toUpperCase();
-                }
             },
             {
                 selector: '.js-state-name',
                 twoWay: false,  // Disables default 2 way binding (this is a readonly field)
-                read: (args) => {    // Provides an intercept method to transform original value
-                    for (let i, len = args.elements.length; i < len; i++) {
-                        const el = args.elements[i];
-                        el.innerHTML = lookups.states[args.value];
+                read: function (value) {    // Provides an intercept method to transform original value
+                    for (var i, len = this.elements.length; i < len; i++) {
+                        var control = this.elements[i];
+                        control.innerHTML = lookups.states[value];
                     }
                 }
             }
@@ -446,7 +460,7 @@ var binder = new bimo.Binder({
         zip: {
             selector: '.js-zip',
             events: {   // Any valid event handler will be wired up placed into this section
-                blur: (e) => {
+                blur: function (e) {
                     // validate zip code here
                     ...
                 }
@@ -457,25 +471,25 @@ var binder = new bimo.Binder({
         lastName: '.js-last-name',
         gender: {
             selector: 'input[name="gender"]',
-            read: (args) => { // read intercept to update HTML, context (this) set to the bind object
-                for (let i = 0, len = args.elements.length; i < len; i++) {
-                    const el = args.elements[i];
-                    if (args.value.includes(el.value)) {
-                        el.checked = true;
+            read: function (value) { // read intercept to update HTML, context (this) set to the bind object
+                for (var i = 0, len = this.elements.length; i < len; i++) {
+                    var control = this.elements[i];
+                    if (value.indexOf(control.value) > -1) {
+                        control.checked = true;
                         break;
                     }
                 }
             },
-            write: (args) {  // write intercept to update model value (if undefined returned no update occurs)
-                let out;
-                for (let i = 0, len = args.elements.length; i < len; i++) {
-                    const el = args.elements[i];
-                    if (el.checked === true) {
-                        out = el.value;
+            write: function () {  // write intercept to update model value (if undefined returned no update occurs)
+                var result;
+                for (var i = 0, len = this.elements.length; i < len; i++) {
+                    var control = this.elements[i];
+                    if (control.checked === true) {
+                        result = control.value;
                         break;
                     }
                 }
-                return out;
+                return result;
             }
         },
         citizen: {
@@ -485,7 +499,7 @@ var binder = new bimo.Binder({
         age: {
             selector: '.js-age',
             events: {
-                blur: (e) => {
+                blur: function (e) {
                     // Validate age here
                     ...
                 }
@@ -493,43 +507,42 @@ var binder = new bimo.Binder({
         },
         cars: {
             selector: '.js-cars', // multi-value select combobox
-            read: (args) { // intercept to setup HTML
-                const el = args.elements[0];
-                for (let i = 0, len = el.options.length; i < len; i++) {
-                    const option = el.options[i];
-                    if (args.value.includes(option.value)) {
+            read: function (value, control) { // intercept to setup HTML
+                for (var i = 0, len = control.options.length; i < len; i++) {
+                    var option = control.options[i];
+                    if (value.indexOf(option.value) > -1) {
                         option.selected = true;
                     }
                 }
             },
-            write: (args) { // intercept to get values
-                const out = [];
-                for (let i = 0, len = args.target.options.length; i < len; i++) {
-                    const option = args.target.options[i];
+            write: function (value, control) { // intercept to get values
+                var result = [];
+                for (var i = 0, len = control.options.length; i < len; i++) {
+                    var option = control.options[i];
                     if (option.selected === true) {
-                        out.push(option.value);
+                        result.push(option.value);
                     }
                 }
-                return out;
+                return result;
             }
         },
         genres: {
             selector: 'input[name="movies"]', // group of checkboxes
-            read: (args) { // intercept to setup HTML
-                for (let i = 0, len = args.elements.length; i < len; i++) {
-                    const el = args.elements[i];
-                    control.checked = args.value.includes(control.value);
+            read: function (value) { // intercept to setup HTML
+                for (var i = 0, len = this.elements.length; i < len; i++) {
+                    var control = this.elements[i];
+                    control.checked = (value.indexOf(control.value) > -1);
                 }
             },
-            write: (args) { // intercept to get values
-                const out = [];
-                for (let i = 0, len = args.elements.length; i < len; i++) {
-                    const el = args.elements[i];
-                    if (el.checked === true) {
-                        out.push(el.value);
+            write: function () { // intercept to get values
+                var result = [];
+                for (var i = 0, len = this.elements.length; i < len; i++) {
+                    var control = this.elements[i];
+                    if (control.checked === true) {
+                        result.push(control.value);
                     }
                 }
-                return out;
+                return result;
             }
         }
     }
@@ -542,17 +555,16 @@ binder.bind(function () {
 ```
 Options:
 
- Keyword | type | Description | Comment 
----|:---:|---|:---:
-selector|string|Follow syntax for [querySelectorAll](https://developer.mozilla.org/en/docs/Web/API/Element/querySelectorAll) method |mandatory
-event|string|Event used to detect changes in HTML controls|default is "change"
-property|string|Property name used to retrieve value from HTML controls|default is "value"
-events|object|Holder object for any valid handler to be wired up to target control|
-options|string/function|Provides options for combobox in key-value hash format|SELECT control only
-placeHolder| string | Default "empty" option for select control|SELECT control only
-read|function|Intercept method reading FROM model to control. Method passes an argument object: <br />{ value, elements, binding }|
-write|function|Intercept method writing TO model from control. Method passes an argument object: <br />{ value, elements, target, binding }|
-format|function|Intercept method reading FROM model to control. Method passes argument object: <br />{ value, elements, binding }|
+| Keyword | type | Description | Comment |
+---|:---:|---|:---:|
+|selector|string|Follow syntax for [querySelectorAll](https://developer.mozilla.org/en/docs/Web/API/Element/querySelectorAll) method |mandatory|
+|event|string|Event used to detect changes in HTML controls|default is "change"|
+|property|string|Property name used to retrieve value from HTML controls|default is "value"|
+|events|object|Holder object for any valid handler to be wired up to target control||
+|options|string/function|Provides options for combobox in key-value hash format|SELECT control only|
+|placeHolder| string | Default "empty" option for select control|SELECT control only|
+|read|function|Intercept method reading FROM model to control. Method context is set to the Bind object parameters passed are the "value" from model and the HTML "control" associated with the bind.||
+|write|function|Intercept method writing TO model from control. Method context is set to the Bind object parameters passed are the "value" and the HTML "control" associated with the bind.||
 
 >##### Note: If you defined read/write methods the responsibility of reading from HTML controls or writing into them must be implemented in there!
 
@@ -575,5 +587,6 @@ Small class represent a single connection in binder (binds property - hash colle
 
 |Function|Description|
 |---|---|
-|applly(bind, callback)|Create or remove connection (wire up event(s)) between model property and HTML control(s)<br />bind = true/false|
+|bind(callback)|Create connection (wire up event(s)) between model property and HTML control(s)|
+|unbind(callback)|Remove connection (events) between model and HTML control(s)|
 

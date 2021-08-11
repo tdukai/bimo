@@ -218,6 +218,21 @@ class Model {
     }
 
     /**
+    * Returns the last part of property (multi-key)
+    *
+    * @method _property
+    * @return {string} property name
+    */
+    _property (name) {
+        let out = name;
+        const parts = this._separate(name);
+        if (Array.isArray(parts)) {
+            out = parts[parts.length - 1];
+        }        
+        return out;
+    }
+
+    /**
     * Converts model into simple javascript object
     *
     * @method _toObject
@@ -456,7 +471,7 @@ class Model {
             const keys = Object.keys(values);
             for (const key of keys) {
                 const model = this._model(key);
-                if (Array.isArray(model._.ev[key]) && model._.ev[key].findIndex(x => x.toString() === event.toString()) === -1) {
+                if (Array.isArray(model._.ev[key])) {
                     model._.ev[key].push(values[key]);
                 } else {
                     model._.ev[key] = [values[key]];
@@ -481,9 +496,9 @@ class Model {
         const remove = (key) => {
             const model = this._model(key);
             if (typeof event === 'function' && Array.isArray(model._.ev[key])) {
-                var pos = model._.ev[key].findIndex(x => x.toString() === event.toString());
-                if (pos > -1) {
-                    model._.ev[key].splice(pos, 1);
+                model._.ev[key] = model._.ev[key].filter(x => x.toString() !== event.toString());
+                if (model._.ev[key].length === 0) {
+                    delete model._.ev[key];
                 }
             } else {
                 model._.ev[key] = null;
@@ -623,26 +638,7 @@ class Bind {
 
 	// Constructor
 	constructor (options = {}) {
-    	if (typeof options.config === 'string') {
-        	options.config = { selector: options.config };
-    	}
-    	options.config = options.config || {};
-    	this.handlers = {};
-
-	    // Assign configuration
-	    const optionsKeys = Object.keys(options);
-	    for (const key of optionsKeys) {
-	        if (key !== 'config') {
-	            this[key] = options[key];
-	        }
-	    }
-
-	    // Set defaults
-	    this.twoWay = (this.twoWay === undefined ? options.defaults.twoWay : this.twoWay);
-	    this.event = this.event || options.defaults.event;
-	    this.property = this.property || options.defaults.property;
-	    this.elements = options.config.elements || null;
-	    this.selector = options.config.selector || null;
+        Object.assign(this, options);
 
         // handlers
         this.controlHandler = (e) => { 
@@ -652,13 +648,11 @@ class Bind {
             this.modelChanged(data); 
         };
 	    
-	    // Load configuration keys
-	    const configKeys = Object.keys(options.config);
-	    for (const key of configKeys) { 
-            this[key] = options.config[key];
-	    }
 	    // Other custom events
+        this.handlers = {};
 	    this.events = this.events || {};
+        this.elements = this.elements || null;
+        this.selector = this.selector || null;
 	    
 	    // Find elements
 	    if (this.isEmpty(this.elements)) {
@@ -830,43 +824,48 @@ class Bind {
     }
 
     /* Gets the value from the HTML control */
-    getValue (control) {
+    getValue (target) {
         let out;
-        if (control !== null) {
-            if (['SELECT', 'INPUT', 'TEXTAREA'].includes(control.nodeName)) {
-                var type = control.type.toLowerCase();
+        if (target !== null) {
+            if (['SELECT', 'INPUT', 'TEXTAREA'].includes(target.nodeName)) {
+                var type = target.type.toLowerCase();
                 if (type === 'checkbox') {
-                    out = control.checked;
+                    out = target.checked;
                 } else if (type === 'file') {
-                    out = control.files;
+                    out = target.files;
                 } else if (type === 'number') {
-                    out = Number(control[this.property]);
+                    out = Number(target[this.property]);
                 } else if (type === 'date') {
-                    out = control.valueAsDate;
+                    out = target.valueAsDate;
                 } else if (type === 'time') {
-                    out = control.value; 
+                    out = target.value; 
                 } else if (type === 'datetime-local') {
-                    out = control.valueAsDate;
+                    out = target.valueAsDate;
                 } else {
-                    out = control[this.property];
+                    out = target[this.property];
                 }
             } else {
-                out = control.innerHTML;
+                out = target.innerHTML;
             }
         }
+
         // Apply parsing (if exists)
         if (typeof this.write === 'function') {
-            out = this.write.call(this, out, control);
+            out = this.write({ value: out, elements: this.elements, target: target, binding: this });
         }
         return out;
     }
 
     /* Sets the value for HTML control */
     setValue (value, refresh = false) {
-        // Apply formatting if exists
+        // If method specified then control update will happen there
+        const args = { value: value, elements: this.elements, binding: this };
         if (typeof this.read === 'function') {
-            this.read.call(this, value);
+            this.read(args);
         } else if (!this.isEmpty(this.elements)) {
+            if (typeof this.format === 'function') {
+                value = this.format(args);
+            }
             // Assign value
             for (const element of this.elements) {
                 // Check by type
@@ -1043,39 +1042,36 @@ class Binder {
     * @param {object} config - binding configuration objects
     * @param {object} defaults - default values for bind objects
     */
-    init (container, model, config, defaults =  { twoWay: true, event: 'change', property: 'value' }) {
+    init (container, model, config = {}, defaults = { twoWay: true, event: 'change', property: 'value' }) {
         // Update references
         if (container) {
             this.container = this.getContainer(container);
         }
         this.model = model;
         // Create bindings
-        if (config) {
-            // Loop over all the configuration elements
-            const keys = Object.keys(config);
-            for (const key of keys) {
-                // Detect if multiple bindings specified
-                if (Array.isArray(config[key]) === true) {
-                    this.binds[key] = [];
-                    for (const cfg of config[key]) {
-                        var item = new window.bimo.Bind({
-                            container: this.container,
-                            model: this.model,
-                            key: key,
-                            config: cfg,
-                            defaults: defaults
-                        });
-                        this.binds[key].push(item);
-                    }
-                } else {
-                    this.binds[key] = new window.bimo.Bind({
+        // Loop over all the configuration elements
+        const keys = Object.keys(config);
+        for (const key of keys) {
+            // Detect if multiple bindings specified
+            if (Array.isArray(config[key]) === true) {
+                this.binds[key] = [];
+                for (const cfg of config[key]) {
+                    const opt = Object.assign({}, defaults, cfg, {
                         container: this.container,
-                        model: this.model,
-                        key: key,
-                        config: config[key],
-                        defaults: defaults
+                        model: this.model._model(key),
+                        key: this.model._property(key)
                     });
+                    const item = new window.bimo.Bind(opt);
+                    this.binds[key].push(item);
                 }
+            } else {
+                const cfg = (typeof config[key] === 'string') ? { selector: config[key] } : config[key];
+                const opt = Object.assign({}, defaults, cfg, {
+                    container: this.container,
+                    model: this.model._model(key),
+                    key: this.model._property(key)
+                });
+                this.binds[key] = new window.bimo.Bind(opt);
             }
         }
     }
