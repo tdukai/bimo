@@ -9,7 +9,7 @@
 */
 class Model {
     /* Constructor */
-    constructor (data = {}) {
+    constructor (data = {}, subs = []) {
         // Add property to hold internal values
         Object.defineProperty(this, '_', {
             enumerable: false,
@@ -26,7 +26,7 @@ class Model {
         // Assign keys
         const keys = Object.keys(data);
         for (const key of keys) {
-            this._addProperty(key);
+            this._addProperty(key, subs);
         }
     }
 
@@ -132,9 +132,10 @@ class Model {
     *
     * @method addProperty
     * @param {string} property name
+    * @param {Array} list of subcomponents name
     * @return {undefined}
     */
-    _addProperty (name) {
+    _addProperty (name, subs = []) {
         // Only create property against own name and non-object element
         if (this._.dt.hasOwnProperty(name)) { 
             if (!this._isObject(this._.dt[name])) {
@@ -189,9 +190,19 @@ class Model {
                     }
                 });
             } else {
-                // Create a subcomponent for object
-                this[name] = new Model(this._.dt[name]);
-            }    
+                if (subs.include(name)) {
+                    // Create a subcomponent for object
+                    this[name] = new Model(this._.dt[name], subs);
+                } else {
+                    // Assign the object as normal properties
+                    Object.defineProperty(this, name, {
+                        enumerable: true,
+                        configurable: true,
+                        writable: true,
+                        value: self._.dt[name]
+                    });            
+                }
+            }
         }
     }
 
@@ -663,16 +674,6 @@ class Bind {
 	        if (this.isEmpty(this.selector)) {
 	            this.elements = null;
 	        } else {
-                if (typeof this.selector === 'string') {
-                    const name = this.key.replaceAll('.', '-');
-                    if (this.selector === '#') {
-                        this.selector = `#${name}`;
-                    } else if (this.selector === '.') {
-                        this.selector = `.${name}`;
-                    } else if (this.selector === '.js-') {
-                        this.selector = `.js-${name}`;
-                    }
-                }
 	            this.elements = (typeof this.selector === 'string') ? this.container.querySelectorAll(this.selector) : this.selector;
 	            if (this.elements === null) {
 	                throw new Error(['"', this.selector.toString(), '" element not found!']);

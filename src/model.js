@@ -195,7 +195,7 @@ class Model {
                     this[name] = new Model(this._.dt[name], subs);
                 } else {
                     // Assign the object as normal properties
-                    Object.defineProperty(this, key, {
+                    Object.defineProperty(this, name, {
                         enumerable: true,
                         configurable: true,
                         writable: true,
