@@ -199,7 +199,7 @@ class Model {
                         enumerable: true,
                         configurable: true,
                         writable: true,
-                        value: self._.dt[name]
+                        value: this._.dt[name]
                     });            
                 }
             }

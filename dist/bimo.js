@@ -190,7 +190,7 @@ class Model {
                     }
                 });
             } else {
-                if (subs.include(name)) {
+                if (subs.includes(name)) {
                     // Create a subcomponent for object
                     this[name] = new Model(this._.dt[name], subs);
                 } else {
@@ -199,7 +199,7 @@ class Model {
                         enumerable: true,
                         configurable: true,
                         writable: true,
-                        value: self._.dt[name]
+                        value: this._.dt[name]
                     });            
                 }
             }
