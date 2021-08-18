@@ -901,6 +901,9 @@ class Bind {
                     out = target.valueAsDate;
                 } else {
                     out = target[this.property];
+                    if (this.type === 'date' || this.type === 'datetime') {
+                        out = new Date(out);
+                    }
                 }
             } else {
                 out = target.innerHTML;
@@ -947,19 +950,19 @@ class Bind {
                             }
                         } else if (type === 'file') {
                             // No input value from model here
-                        } else if (type === 'date') {
+                        } else if (type === 'date' || this.type === 'date') {
                             if (typeof value === 'string') {
                                 element.value = value.substr(0, 10);
                             } else if (value && typeof value.toISOString === 'function') {
                                 element.value = value.toISOString().substr(0, 10);
                             }
-                        } else if (type === 'time') {
+                        } else if (type === 'time' || this.type === 'time') {
                             if (typeof value === 'string') {
                                 element.value = value.substr(11, 5);
                             } else if (value && typeof value.toISOString === 'function') {
                                 element.value = value.toISOString().substr(11, 5);
                             }
-                        } else if (type === 'datetime-local') {
+                        } else if (type === 'datetime-local' || this.type === 'datetime') {
                             if (typeof value === 'string') {
                                 element.value = value.substr(0, 16);
                             } else if (value && typeof value.toISOString === 'function') {
@@ -1100,7 +1103,7 @@ class Binder {
     * @param {object} config - binding configuration objects
     * @param {object} defaults - default values for bind objects
     */
-    init (container, model, config = {}, defaults = { twoWay: true, event: 'change', property: 'value' }) {
+    init (container, model, config = {}, defaults = { twoWay: true, type: 'text', event: 'change', property: 'value' }) {
         // Update references
         if (container) {
             this.container = this.getContainer(container);
