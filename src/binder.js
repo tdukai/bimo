@@ -216,10 +216,17 @@ class Bind {
                     out = target[this.property];
                     if (this.type === 'date' || this.type === 'datetime') {
                         out = new Date(out);
+                    } else if (type === 'number') {
+                        out = Number(out);
                     }
                 }
             } else {
                 out = target.innerHTML;
+                if (this.type === 'date' || this.type === 'datetime') {
+                    out = new Date(out);
+                } else if (type === 'number') {
+                    out = Number(out);
+                }
             }
         }
 
