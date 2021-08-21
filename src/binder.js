@@ -412,13 +412,58 @@ window.bimo.Bind = Bind;
 */
 class Binder {
 
-	// Constructor
-	constructor (options = {}) {
-	    this.container = this.getContainer(options.container);
-	    this.model = options.model || {};
-	    this.binds = {};
+    /* eslint-disable-next-line */
+    static _types = {};
+
+    /**
+    * Registers external bind classes
+    * 
+    * @method register
+    * @param {string} key
+    * @param {Class} bind class
+    */
+    static register (key, bindClass) {
+        const k = key.toLowerCase();
+        this._types[k] = bindClass;
+    }
+
+    /**
+    * Unregisters external bind classes
+    * 
+    * @method unregister
+    * @param {string} key
+    */
+    static unregister (key) {
+        const k = key.toLowerCase();
+        if (this._types[k]) {
+            delete this._types[k];
+        }
+    }
+
+    /**
+    * Returns the bind class 
+    * 
+    * @method getBindClass
+    * @param {string} key
+    */
+    static getBindClass (key) {
+        let out = window.bimo.Bind;
+        if (typeof key === 'string') {
+            const k = key.toLowerCase();
+            if (this._types[k]) {
+                out = this._types[k];
+            }
+        }
+        return out;
+    }
+
+    // Constructor
+    constructor (options = {}) {
+        this.container = this.getContainer(options.container);
+        this.model = options.model || {};
+        this.binds = {};
         this.init(this.container, this.model, options.config, options.defaults);
-	}
+    }
 
     /**
     * Initialize binding 
@@ -427,7 +472,6 @@ class Binder {
     * @param {DOM object} container - container node element for the binding
     * @param {object} model - data model
     * @param {object} config - binding configuration objects
-    * @param {object} defaults - default values for bind objects
     */
     init (container, model, config = {}) {
         // Update references
@@ -449,7 +493,8 @@ class Binder {
                         model: this.model._model(key),
                         key: this.model._property(key)
                     });
-                    const item = new window.bimo.Bind(opt);
+                    const BindClass = window.bimo.Binder.getBindClass(opt.type);
+                    const item = new BindClass(opt);
                     this.binds[key].push(item);
                 }
             } else {
@@ -459,7 +504,8 @@ class Binder {
                     model: this.model._model(key),
                     key: this.model._property(key)
                 });
-                this.binds[key] = new window.bimo.Bind(opt);
+                const BindClass = window.bimo.Binder.getBindClass(opt.type);
+                this.binds[key] = new BindClass(opt);
             }
         }
     }
