@@ -698,7 +698,7 @@ class Bind {
 
 	// Constructor
 	constructor (options = {}) {
-        Object.assign(this, options);
+        Object.assign(this, { twoWay: true, type: 'text', event: 'change', property: 'value' }, options);
 
         // handlers
         this.controlHandler = (e) => {
@@ -903,10 +903,23 @@ class Bind {
                     out = target[this.property];
                     if (this.type === 'date' || this.type === 'datetime') {
                         out = new Date(out);
+                    } else if (type === 'number') {
+                        out = Number(out);
+                        if (isNaN(out)) {
+                            out = this.empty || 0;
+                        }
                     }
                 }
             } else {
                 out = target.innerHTML;
+                if (this.type === 'date' || this.type === 'datetime') {
+                    out = new Date(out);
+                } else if (type === 'number') {
+                    out = Number(out);
+                    if (isNaN(out)) {
+                        out = this.empty || 0;
+                    }
+                }
             }
         }
 
@@ -1103,7 +1116,7 @@ class Binder {
     * @param {object} config - binding configuration objects
     * @param {object} defaults - default values for bind objects
     */
-    init (container, model, config = {}, defaults = { twoWay: true, type: 'text', event: 'change', property: 'value' }) {
+    init (container, model, config = {}) {
         // Update references
         if (container) {
             this.container = this.getContainer(container);
@@ -1118,7 +1131,7 @@ class Binder {
                 this.binds[key] = [];
                 for (const c of config[key]) {
                     const cfg = (typeof c === 'string') ? { selector: c } : c;
-                    const opt = Object.assign({}, defaults, cfg, {
+                    const opt = Object.assign({}, cfg, {
                         container: this.container,
                         model: this.model._model(key),
                         key: this.model._property(key)
@@ -1128,7 +1141,7 @@ class Binder {
                 }
             } else {
                 const cfg = (typeof config[key] === 'string') ? { selector: config[key] } : config[key];
-                const opt = Object.assign({}, defaults, cfg, {
+                const opt = Object.assign({}, cfg, {
                     container: this.container,
                     model: this.model._model(key),
                     key: this.model._property(key)
