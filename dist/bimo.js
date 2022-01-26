@@ -1008,6 +1008,15 @@ class Bind {
             const value = this.getValue(e.target);
             if (value !== undefined) {
                 this.model[this.key] = value;
+                if (typeof this.change === 'function') {
+                    if (this.change.constructor.name === 'AsyncFunction') {
+                        this.change(value).then(() => {}).catch((err) => {
+                            console.error(err);
+                        });
+                    } else {
+                        this.change(value);
+                    }
+                }
             }
         }
     }
