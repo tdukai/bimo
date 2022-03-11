@@ -1179,29 +1179,33 @@ class Binder {
         // Loop over all the configuration elements
         const keys = Object.keys(config);
         for (const key of keys) {
-            // Detect if multiple bindings specified
-            if (Array.isArray(config[key]) === true) {
-                this.binds[key] = [];
-                for (const c of config[key]) {
-                    const cfg = (typeof c === 'string') ? { selector: c } : c;
+            try {
+                // Detect if multiple bindings specified
+                if (Array.isArray(config[key]) === true) {
+                    this.binds[key] = [];
+                    for (const c of config[key]) {
+                        const cfg = (typeof c === 'string') ? { selector: c } : c;
+                        const opt = Object.assign({}, cfg, {
+                            container: this.container,
+                            model: this.model._model(key),
+                            key: this.model._property(key)
+                        });
+                        const BindClass = window.bimo.Binder.getBindClass(opt.type);
+                        const item = new BindClass(opt);
+                        this.binds[key].push(item);
+                    }
+                } else {
+                    const cfg = (typeof config[key] === 'string') ? { selector: config[key] } : config[key];
                     const opt = Object.assign({}, cfg, {
                         container: this.container,
                         model: this.model._model(key),
                         key: this.model._property(key)
                     });
                     const BindClass = window.bimo.Binder.getBindClass(opt.type);
-                    const item = new BindClass(opt);
-                    this.binds[key].push(item);
+                    this.binds[key] = new BindClass(opt);
                 }
-            } else {
-                const cfg = (typeof config[key] === 'string') ? { selector: config[key] } : config[key];
-                const opt = Object.assign({}, cfg, {
-                    container: this.container,
-                    model: this.model._model(key),
-                    key: this.model._property(key)
-                });
-                const BindClass = window.bimo.Binder.getBindClass(opt.type);
-                this.binds[key] = new BindClass(opt);
+            } catch (err) {
+                console.error(`key: ${key}`, config[key], err);
             }
         }
     }
