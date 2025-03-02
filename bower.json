@@ -1,6 +1,6 @@
 {
   "name": "bimo",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Binding and Model - Non-intrusive binding between model and HTML controls and non-opinionated observable model with multiple watch strategies.",
   "main": "dist/bimo.min.js",
   "authors": [

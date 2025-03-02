@@ -1,10 +1,11 @@
 'use strict';
 
-var gulp = require('gulp');
-var plugins = require('gulp-load-plugins')({"camelize": true});
-var jsLint = ['*.js', 'src/*.js'];
-var jsTest = ['test/tests.js'];
-var bundle = [
+const { src, dest, series } = require('gulp');
+const plugins = require('gulp-load-plugins')({"camelize": true});
+const mocha = require('gulp-mocha');
+const jsLint = ['*.js', 'src/*.js'];
+const jsTest = ['test/tests.js'];
+const srcList = [
     'src/model.js',
     'src/binder.js'
 ];
@@ -16,55 +17,58 @@ var terserOptions = {
 */
 
 // Lint source
-gulp.task('lint', function () {
-    return gulp.src(jsLint)
+function lint () {
+    return src(jsLint)
         .pipe(plugins.expectFile(jsLint))
         .pipe(plugins.eslint('.eslintrc'))
         .pipe(plugins.eslint.format());
-});
+}
 
 // Testing
-gulp.task('test', gulp.series('lint', function () {
-    return gulp.src(jsTest)
+function test () {
+    return src(jsTest)
         .pipe(plugins.expectFile(jsTest))
-        .pipe(plugins.mocha({reporter: 'nyan'}));
-}));
+        .pipe(mocha({reporter: 'nyan'}));
+}
 
 // Bundling
-gulp.task('bundle', function () {
+function bundle () {
     // Copy License to dist folder
-    gulp.src('LICENSE')
-        .pipe(gulp.dest('dist'));
+    src('LICENSE')
+        .pipe(dest('dist'));
     // Create combined (non compressed) package
-    gulp.src(bundle)
+    src(srcList)
         .pipe(plugins.concat('bimo.js'))
-        .pipe(gulp.dest('dist'));
+        .pipe(dest('dist'));
     // Create individual files compressed 
-    gulp.src(bundle)
+    src(srcList)
         .pipe(plugins.terser().on('error', console.error))
         .pipe(plugins.rename({ extname: '.min.js' }))
-        .pipe(gulp.dest('dist'));
+        .pipe(dest('dist'));
     // Create individual files gzip compressed
-    gulp.src(bundle)
-    .pipe(plugins.terser().on('error', console.error))
+    src(srcList)
+        .pipe(plugins.terser().on('error', console.error))
         .pipe(plugins.gzip({
             append: true,
             gzipOptions: {
                 level: 9
             }
         }))
-        .pipe(gulp.dest('dist'));
-    return gulp.src(bundle)
+        .pipe(dest('dist'));
+    return src(srcList)
         .pipe(plugins.concat('bimo.min.js'))
         .pipe(plugins.terser().on('error', console.error))
-        .pipe(gulp.dest('dist'))
+        .pipe(dest('dist'))
         .pipe(plugins.gzip({
             append: true,
             gzipOptions: {
                 level: 9
             }
         }))
-        .pipe(gulp.dest('dist'));
-});
+        .pipe(dest('dist'));
+}
 
-gulp.task('default', gulp.parallel('lint', 'bundle'));
+exports.test = test;
+exports.lint = lint;
+exports.bundle = bundle;
+exports.default = series(test, bundle);

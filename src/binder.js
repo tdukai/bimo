@@ -320,14 +320,17 @@ class Bind {
         if (this.twoWay === true) {
             const value = this.getValue(e.target);
             if (value !== undefined) {
-                this.model[this.key] = value;
-                if (typeof this.change === 'function') {
-                    if (this.change.constructor.name === 'AsyncFunction') {
-                        this.change(value).then(() => {}).catch((err) => {
-                            console.error(err);
-                        });
-                    } else {
-                        this.change(value);
+                // Check change
+                if (String(this.model[this.key]).trim() !== String(value).trim()) {
+                    this.model[this.key] = value;
+                    if (typeof this.change === 'function') {
+                        if (this.change.constructor.name === 'AsyncFunction') {
+                            this.change(value).then(() => {}).catch((err) => {
+                                console.error(err);
+                            });
+                        } else {
+                            this.change(value);
+                        }
                     }
                 }
             }

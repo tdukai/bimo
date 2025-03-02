@@ -19,15 +19,15 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "chai": "^4.3.4",
-    "gulp": "^4.0.2",
+    "chai": "^5.2.0",
+    "gulp": "^5.0.0",
     "gulp-concat": "^2.6.1",
     "gulp-eslint": "^6.0.0",
     "gulp-expect-file": "^2.0.0",
     "gulp-gzip": "^1.4.2",
-    "gulp-load-plugins": "^2.0.7",
-    "gulp-mocha": "^8.0.0",
+    "gulp-load-plugins": "^2.0.8",
+    "gulp-mocha": "8.0.0",
     "gulp-rename": "^2.0.0",
-    "gulp-terser": "^2.0.1"
+    "gulp-terser": "^2.1.0"
   }
 }

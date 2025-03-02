@@ -466,6 +466,30 @@ class Model {
     }
 
     /**
+    * Checks if anything in the model changed
+    *
+    * @method _hasChanged
+    * @params {Object} delta object to evaluate (if not specified uses its own)
+    * @return {boolean} true if anything in the model changed
+    */
+    _hasChanged (obj = null) {
+        obj = obj || this._delta();
+        let out = false;
+        if (obj.hasOwnProperty('original') && obj.hasOwnProperty('actual')) {
+            out = (obj.original !== obj.actual);
+        } else {
+            const keys = Object.keys(obj);
+            for (const key of keys) {
+                if (this._hasChanged(obj[key])) {
+                    out = true;
+                    break;
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
     * Adds new callback to change event list but checking if the event already on the list avoiding double subscription
     *
     * @method on
