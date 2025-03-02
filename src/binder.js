@@ -324,7 +324,7 @@ class Bind {
                 this.model[this.key] = value;
                 if (typeof this.change === 'function') {
                     if (this.change.constructor.name === 'AsyncFunction') {
-                        this.change(value).then(() => {}).catch((err) => {
+                        this.change(value, this.key).then(() => {}).catch((err) => {
                             console.error(err);
                         });
                     } else {
