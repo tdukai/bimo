@@ -190,9 +190,17 @@ class Model {
                     }
                 });
             } else {
-                if ((typeof subs === 'string' && subs === name) || (Array.isArray(subs) && subs.includes(name))) {
-                    // Create a subcomponent for object
-                    this[name] = new Model(this._.dt[name], subs);
+                const prefix = name + '.';
+                const isNested = (typeof subs === 'string')
+                    ? (subs === name || subs.startsWith(prefix))
+                    : (Array.isArray(subs) && subs.some(s => s === name || s.startsWith(prefix)));
+
+                if (isNested) {
+                    // Build child subs by stripping this key's prefix from deeper entries
+                    const childSubs = Array.isArray(subs)
+                        ? subs.filter(s => s.startsWith(prefix)).map(s => s.slice(prefix.length))
+                        : (typeof subs === 'string' && subs.startsWith(prefix) ? subs.slice(prefix.length) : []);
+                    this[name] = new Model(this._.dt[name], childSubs);
                 } else {
                     // Assign the object as normal properties
                     Object.defineProperty(this, name, {
@@ -200,7 +208,7 @@ class Model {
                         configurable: true,
                         writable: true,
                         value: this._.dt[name]
-                    });            
+                    });
                 }
             }
         }
@@ -1035,7 +1043,7 @@ class Bind {
                 this.model[this.key] = value;
                 if (typeof this.change === 'function') {
                     if (this.change.constructor.name === 'AsyncFunction') {
-                        this.change(value).then(() => {}).catch((err) => {
+                        this.change(value, this.key).then(() => {}).catch((err) => {
                             console.error(err);
                         });
                     } else {
